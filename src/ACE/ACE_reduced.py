@@ -90,7 +90,6 @@ class ACEModel_RF:
         E_step = E_year * dt
 
         D_t = 1.0 - np.exp(-p.xi * self.M[t])
-
         K_t = np.exp(self.k[t])
         Y_t = self._output(self.A[t], K_t, E_year) * dt
         C_t = x * Y_t * (1.0 - D_t)
@@ -118,6 +117,6 @@ class ACEModel_RF:
 
     def simulate(self, policy_fn):
         for t in range(self.T):
-            taxed_E = policy_fn(self.D[t])
-            self.step(t, taxed_E=taxed_E)
+            tax = policy_fn(self.D[t],t)
+            self.step(t, tax=tax)
         return self
