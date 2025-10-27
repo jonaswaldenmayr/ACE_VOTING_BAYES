@@ -1,0 +1,1 @@
+IAM coupled with a probabilistic voting model where voters do bayesian learing over climate sensitivity.
