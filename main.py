@@ -5,6 +5,8 @@ from src.config.app import all_config
 from src.voting.test_voting_model import VotingModel
 from src.ACE.ACE_reduced import ACEModel_RF
 from src.plotting import plot_time_series
+from src.updating.belief_updating import GroupBeliefUpdating
+
 
 
 def main():
@@ -13,11 +15,13 @@ def main():
     print("Parameters - core:", cfg.core)
     print("Parameters – ACE :", cfg.ace)
     print("Parameters – vote:", cfg.voting)
+    print("Parameters – updating:", cfg.updating)
 
-    # Build models
+
+    #--- ACE -------------------------------------------------------
     ACE = ACEModel_RF(cfg.ace, cfg.core)
-    #beliefs = 
 
+    #----- Voting Model ----------------------------------------------
     voting = VotingModel(
             E_bar=cfg.ace.E_bar,     # this is the E baseline level for the period
             kappa_E=cfg.ace.kappa_E,
@@ -27,15 +31,28 @@ def main():
             xi_physical=cfg.ace.xi,
             p=cfg.voting,
         )
-    # policy function calls voting model
+
+    beliefs = GroupBeliefUpdating.config(cfg.updating)
+
+    #----- Policy fn running the voting model & belief updates --------
     def policy_fn(dmg: float, t) -> float: 
+
+        # Observe current ACE state
+        M_t, D_t = ACE.M[t], ACE.D[t]
+
+        # Update Beliefs
+        beliefs.update(M_t=M_t, D_t_obs=D_t)
+        xi_G, xi_B = beliefs.current_xi()
+
+
         tau, gv, bv = voting.run_election(dmg)
         print(f"[Election t={t}] tau*={tau:.3f} | green={gv}/{cfg.voting.num_voters} | brown={bv}/{cfg.voting.num_voters}")
         return tau  # ACE maps τ -> E internally
     
-    # Simulate
+    #----- Simulate ---------------------------------------------------
     ACE.simulate(policy_fn)
 
+    #----- Plotting ---------------------------------------------------
     years = np.arange(cfg.core.start_year, cfg.core.start_year + cfg.core.period_len * ACE.T, cfg.core.period_len)
     plot_time_series(ACE.Y, x=years, title="GDP Y", xlabel="Year", ylabel="GDP")
     plot_time_series(ACE.K, x=years, title="Capital K", xlabel="Year", ylabel="Capital")
