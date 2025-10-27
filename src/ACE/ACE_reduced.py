@@ -113,6 +113,11 @@ class ACEModel_RF:
         self.C[t] = C_t
         self.K[t] = K_t
 
+        print(f"Y",Y_t)
+        print(f"C",C_t)
+        print(f"K",K_t)
+        print(f"D",D_t)
+
         return {"Y": Y_t, "C": C_t, "K": K_t, "E_year": E_year, "D": D_t, "A": self.A[t], "M": self.M[t]}
 
     def simulate(self, policy_fn):

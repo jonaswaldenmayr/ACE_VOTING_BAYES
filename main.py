@@ -17,13 +17,21 @@ def main():
     # Build models
     ACE = ACEModel_RF(cfg.ace, cfg.core)
     #beliefs = 
-    voting = VotingModel(ACE.controls.E_opti, cfg.ace.E_bau, cfg.voting)
 
+    voting = VotingModel(
+            E_bar=cfg.ace.E_bar,     # this is the E baseline level for the period
+            kappa_E=cfg.ace.kappa_E,
+            nu=cfg.ace.nu,
+            beta=cfg.ace.beta,
+            delta=cfg.ace.delta,
+            xi_physical=cfg.ace.xi,
+            p=cfg.voting,
+        )
     # policy function calls voting model
-    def policy_fn(dmg: float) -> float: 
-        tax, gv, bv = voting.run_election(dmg)
-        print(f"  [Election] tax={tax:.3f} | green={gv} ({gv/cfg.voting.num_voters:.1%}) | brown={bv} ({bv/cfg.voting.num_voters:.1%})")
-        return tax  # per-year emissions number
+    def policy_fn(dmg: float, t) -> float: 
+        tau, gv, bv = voting.run_election(dmg)
+        print(f"[Election t={t}] tau*={tau:.3f} | green={gv}/{cfg.voting.num_voters} | brown={bv}/{cfg.voting.num_voters}")
+        return tau  # ACE maps τ -> E internally
     
     # Simulate
     ACE.simulate(policy_fn)

@@ -23,6 +23,10 @@ class ACEParameters:
     molar_mass_CO2: float = 44.01
     molar_mass_C: float = 12.01
 
+    # tax→emissions elasticity in E(τ)=E^- * exp(-kappa_E * τ)
+    kappa_E: float = 0.35
+
+
     @property
     def M_init(self) -> float:
         return self.ppm_value * self.ppm_to_GtC
@@ -30,3 +34,7 @@ class ACEParameters:
     @property
     def E_bau(self) -> float:
         return self.BAU_E_CO2_init *(self.molar_mass_CO2/self.molar_mass_C)
+
+    @property
+    def E_bar(self) -> float:
+        return self.E_bau
