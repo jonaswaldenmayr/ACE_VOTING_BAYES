@@ -41,8 +41,8 @@ def main():
         M_t, D_t = ACE.M[t], ACE.D[t]
 
         # Update Beliefs
-        beliefs.update(M_t=M_t, D_t_obs=D_t)
-        xi_G, xi_B = beliefs.current_xi()
+        beliefs.update(M_t=M_t, D_t=D_t)
+        # xi_G, xi_B = beliefs.current_xi()
 
 
         tau, gv, bv = voting.run_election(dmg)

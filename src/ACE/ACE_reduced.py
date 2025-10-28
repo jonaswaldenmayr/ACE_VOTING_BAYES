@@ -122,6 +122,6 @@ class ACEModel_RF:
 
     def simulate(self, policy_fn):
         for t in range(self.T):
-            tax = policy_fn(self.D[t],t)
+            tax = policy_fn(self.D[t], t)
             self.step(t, tax=tax)
         return self
