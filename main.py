@@ -2,7 +2,8 @@ from __future__ import annotations
 import numpy as np
 
 from src.config.app import all_config
-from src.voting.test_voting_model import VotingModel
+from src.voting.OfficeMotiv_model import OfficeMotivPVM, build_pvm_params
+from src.voting.simple_test_model import TestVotingModel
 from src.ACE.ACE_reduced import ACEModel_RF
 from src.plotting import plot_time_series
 from src.updating.belief_updating import GroupBeliefUpdating
@@ -21,17 +22,20 @@ def main():
     #--- ACE -------------------------------------------------------
     ACE = ACEModel_RF(cfg.ace, cfg.core)
 
-    #----- Voting Model ----------------------------------------------
-    voting = VotingModel(
-            E_bar=cfg.ace.E_bar,     # this is the E baseline level for the period
-            kappa_E=cfg.ace.kappa_E,
-            nu=cfg.ace.nu,
-            beta=cfg.ace.beta,
-            delta=cfg.ace.delta,
-            xi_physical=cfg.ace.xi,
-            p=cfg.voting,
-        )
+    #----- Voting Model --------------------------------------------
+    # voting = TestVotingModel(
+    #         E_bar=cfg.ace.E_bar,     # this is the E baseline level for the period
+    #         kappa_E=cfg.ace.kappa_E,
+    #         nu=cfg.ace.nu,
+    #         beta=cfg.ace.beta,
+    #         delta=cfg.ace.delta,
+    #         xi_physical=cfg.ace.xi,
+    #         p=cfg.voting,
+    #     )
+    pvm_params = build_pvm_params(cfg.ace, cfg.voting)  
+    voting = OfficeMotivPVM(pvm_params)
 
+    #----- Set Start Beliefs ---------------------------------------
     beliefs = GroupBeliefUpdating.config(cfg.updating)
 
     #----- Policy fn running the voting model & belief updates --------
@@ -40,14 +44,20 @@ def main():
         # Observe current ACE state
         M_t, D_t = ACE.M[t], ACE.D[t]
 
-        # Update Beliefs
+        #### Update Beliefs
+        # 1) Use LAST period's xi (the current prior) for the election
+        xi_G, xi_B = beliefs.current_xi()
+        # 2) Update NOW with THIS period's (M_t, D_t) for next time's prior
         beliefs.update(M_t=M_t, D_t=D_t)
-        # xi_G, xi_B = beliefs.current_xi()
+
+        # Run election
+        E_star = voting.E_star(xi_G, xi_B) 
+
+        #tau, gv, bv = voting.run_election(dmg) # HAND OVER XI'S!!!!!!!!!!!!!!!!!!!!!
 
 
-        tau, gv, bv = voting.run_election(dmg)
-        print(f"[Election t={t}] tau*={tau:.3f} | green={gv}/{cfg.voting.num_voters} | brown={bv}/{cfg.voting.num_voters}")
-        return tau  # ACE maps τ -> E internally
+        print(f"[Election t={t}] E*={E_star:.3f} | ξ̂_G={xi_G:.3f} | ξ̂_B={xi_B:.3f} | Vote Share: 50 / 50")
+        return E_star  
     
     #----- Simulate ---------------------------------------------------
     ACE.simulate(policy_fn)

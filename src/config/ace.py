@@ -8,15 +8,14 @@ class ACEParameters:
     A_init: float = 16.09
     K_init: float = 130.0 * 3
     # Technology / preferences
-    nu: float = 0.07                                                #emission dependency
-    kappa: float = 0.30
-    beta: float = 0.84
+    nu: float = 0.07                                                # fossil-energy dependency of production
+    kappa: float = 0.30                                             # capital elasticity
+    beta: float = 0.84                                              # discount factor
     tech_improvement_rate: float = 0.018  # per year
     prtp = 0.013896                                                 #pure rate of time preference -> currently not used
-    #beta = 1 / (1 + prtp)**step_size                                #discount factor for 10-year steps
     # Climate
     xi: float = 0.0002046
-    delta: float = 0.01
+    delta: float = 0.01                                             # carbon decay rate
     ppm_value: float = 427.0
     ppm_to_GtC: float = 2.31
     BAU_E_CO2_init: float = 35.0

@@ -13,7 +13,7 @@ class Group:
     xi: float                                                   # perceived damage weight ξ_j
     taste_scale: float    # s_j for logistic taste shocks
 
-class VotingModel:
+class TestVotingModel:
     """
     Reduced-form probabilistic voting with CLOSED-FORM τ*.
     """
@@ -37,17 +37,17 @@ class VotingModel:
         self.p = p
 
         # shares
-        total_q = (p.q_G + p.q_B)
-        q_G = p.q_G / total_q
-        q_B = p.q_B / total_q
+        total_q = (p.qG + p.qB)
+        qG = p.qG / total_q
+        qB = p.qB / total_q
 
         # perceived damages from multiplyers (to be updated later)
         xi_G = p.xi_mult_G * self.xi_physical
         xi_B = p.xi_mult_B * self.xi_physical
 
         self.groups = [
-            Group(name="Green", share=q_G, xi=xi_G, taste_scale=p.taste_scale_G),
-            Group(name="Brown", share=q_B, xi=xi_B, taste_scale=p.taste_scale_B),
+            Group(name="Green", share=qG, xi=xi_G, taste_scale=p.taste_scale_G),
+            Group(name="Brown", share=qB, xi=xi_B, taste_scale=p.taste_scale_B),
         ]
 
         def f_eta_zero(s: float) -> float:

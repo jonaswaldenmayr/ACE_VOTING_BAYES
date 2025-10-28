@@ -27,7 +27,7 @@ class ACEModel_RF:
      Conventions
     -----------
     - One model step is `dt = core.period_len` years (10y)
-    - Policy chooses `E_year` (per-year emissions) each period. -> make that decade!!!
+    - Policy chooses `E_year` (per-year emissions) each period, implemented for the whole decade.
     - Internally we convert to per-period where needed:
         * Output Y_t is a *flow over the period*: Y_t = A_t K_t^κ E_year^ν * dt
         * Carbon stock: M_{t+1} = (1-δ)^{dt} M_t + E_year * dt
@@ -36,6 +36,7 @@ class ACEModel_RF:
         * Stocks A, M, k are length T+1 (store t=0 initial and terminal t=T)
         * Flows Y, C, E, D, K are length T
     """
+    ...
 
     def __init__(self, p: ACEParameters, core: CoreSettings):
         self.p = p
@@ -81,12 +82,11 @@ class ACEModel_RF:
     def _output(self, A: float, K: float, E: float) -> float:
         return A * (K ** self.p.kappa) * (E ** self.p.nu)
 
-    def step(self, t: int, tax: float) -> dict:
+    def step(self, t: int, E: float) -> dict:
         p, dt = self.p, self.dt
         x = self.controls.x_opti
 
-        # tax into emissions / year
-        E_year = float(p.E_bau * np.exp(-p.kappa * tax))
+        E_year = E
         E_step = E_year * dt
 
         D_t = 1.0 - np.exp(-p.xi * self.M[t])
@@ -122,6 +122,6 @@ class ACEModel_RF:
 
     def simulate(self, policy_fn):
         for t in range(self.T):
-            tax = policy_fn(self.D[t], t)
-            self.step(t, tax=tax)
+            E = policy_fn(self.D[t], t)
+            self.step(t, E)
         return self
