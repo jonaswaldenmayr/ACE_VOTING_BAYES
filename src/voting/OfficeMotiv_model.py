@@ -82,3 +82,12 @@ def build_pvm_params(ace, voting) -> PVMParams:
         a_G = voting.a_G, a_B = voting.a_B,
         num_voters = voting.num_voters,
     )
+
+@dataclass
+class VotingOutcome:
+    t: int
+    E_star: float
+    xi_G: float
+    xi_B: float
+    vote_share_G: float
+    vote_share_B: float
