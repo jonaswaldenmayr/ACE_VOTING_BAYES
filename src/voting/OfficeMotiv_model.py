@@ -54,9 +54,33 @@ class OfficeMotivPVM:
         denom = (1.0 - self.p.beta * (1 - self.p.delta)) * (1 - self.p.beta * self.p.kappa)
         return - xi_hat_j / denom
 
-    def E_star(self, xi_G: float, xi_B: float) -> float:
-        denom = self.p.qG * self.phi_M(xi_G) + self.p.qB * self.phi_M(xi_B)
-        E_star = -self.p.nu / denom
+    def E_star(
+        self,
+        xi_G: float,
+        xi_B: float,
+        E_before: float| None = None,                         # E in t-1
+        pol_slackness: float | None = None,     # slackness in the political system permits only ±20% changes per period
+    ) -> float:
+
+        if pol_slackness is None:
+            denom = self.p.qG * self.phi_M(xi_G) + self.p.qB * self.phi_M(xi_B)
+            E_star = -self.p.nu / denom
+            if E_star < 0:
+                return 0.0
+
+        if E_before is None:
+            denom = self.p.qG * self.phi_M(xi_G) + self.p.qB * self.phi_M(xi_B)
+            E_star = -self.p.nu / denom
+        else:
+            denom = self.p.qG * self.phi_M(xi_G) + self.p.qB * self.phi_M(xi_B)
+            E_raw = -self.p.nu / denom
+
+            lowerBound = max(0.0, (1.0 - pol_slackness) * E_before)
+            upperBound = (1.0 + pol_slackness) * E_before
+            E_star = min(max(E_raw, lowerBound), upperBound)
+
+
+        
 
         if E_star < 0:
             return 0.0

@@ -30,12 +30,16 @@ def main():
     voting = OfficeMotivPVM(pvm_params)
     elections = []
 
+    e_prev = cfg.E_bau
+    # e_prev = cfg.E_before
+
 
     #----- Set Start Beliefs ---------------------------------------
     beliefs = GroupBeliefUpdating.config(cfg)
 
     #----- Policy fn running the voting model & belief updates --------
     def policy_fn(dmg: float, t) -> float: 
+        nonlocal e_prev
 
         # Observe current ACE state
         M_t, D_t = ACE.M[t], ACE.D[t]
@@ -48,7 +52,7 @@ def main():
         beliefs.update(M_t=M_t, D_t=D_t)
 
         # Run election
-        E_star = voting.E_star(xi_G, xi_B) 
+        E_star = voting.E_star(xi_G, xi_B, e_prev, cfg.pol_slackness) 
         vote_share_G = 0.5
         vote_share_B = 0.5
         log_election(elections, t, E_star, xi_G, xi_B, vote_share=0.5)  # adjust vote_share when you have it
@@ -58,6 +62,7 @@ def main():
 
 
         print(f"[Election t={t}] E*={E_star:.3f} | ξ̂_G={xi_G:.3f} | ξ̂_B={xi_B:.3f} | Vote Share: 50 / 50")
+        e_prev = E_star
         return E_star  
     
     #----- Simulate ---------------------------------------------------

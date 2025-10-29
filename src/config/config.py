@@ -7,7 +7,7 @@ class Parameters:
     ########################################################################################################
     ######## CORE ###########################################################################################
     period_len: int = 10
-    periods: int = 3
+    periods: int = 30
     start_year: int = 2020
     ########################################################################################################
     ######## ACE ###########################################################################################
@@ -15,6 +15,7 @@ class Parameters:
     Y_init: float = 130.0                                           #in Trillion USD
     A_init: float = 16.09
     K_init: float = 130.0 * 3
+    E_before: float = 20                                             # E level in t-1   
     nu: float = 0.07                                                # fossil-energy dependency of production
     kappa: float = 0.30                                             # capital elasticity
     beta: float = 0.84                                              # discount factor
@@ -31,36 +32,36 @@ class Parameters:
     BAU_E_CO2_init: float = 35.0
     molar_mass_CO2: float = 44.01
     molar_mass_C: float = 12.01
-    kappa_E: float = 0.35
     @property
     def M_init(self) -> float:
         return self.ppm_value * self.ppm_to_GtC
     ########################################################################################################
     ######## VOTING #########################################################################################
-    num_voters: int = 1000                    
+    num_voters: int = 1000    
+    pol_slackness: float = 0.2                                      # slackness in the political system permits only ±20% changes per period                
     # Group shares
     qG: float = 0.5
     qB: float = 0.5
     #### Office Motivated Model ########################################
     # Perceived damage multiplier (remove once learning is implemented!!!)
-    xi_mult_G: float = 1.3
-    xi_mult_B: float = 0.7
+    xi_mult_G: float = 1.3 * xi
+    xi_mult_B: float = 0.7 * xi
     # UNIFORM taste noise
     a_G: float = 1.0
     a_B: float = 1.0
     ########################################################################################################
     ######## BAYES UPDATING ##################################################################################
     # Initial prior means (mu_{ξ,0})
-    xi_mu_G0: float = 3.5
-    xi_mu_B0: float = 2.5
+    xi_mu_G0: float = 0.1
+    xi_mu_B0: float = 0.05
 
     # Initial prior standard deviations (σ_{ξ,0})
-    xi_sigma_G: float = 0.7        # Green group: open to new info
-    xi_sigma_B: float = 0.7
+    xi_sigma_G = 0.9 * xi                   # Green group: open to new info
+    xi_sigma_B = 0.9 * xi        
 
     # Damage shock noise (σ_ε)
-    sigma_epsilon_G: float = 0.03
-    sigma_epsilon_B: float = 0.03     
+    sigma_epsilon_G: float = 0.3
+    sigma_epsilon_B: float = 0.5    
 
 def all_config() -> Parameters:
     return Parameters()
