@@ -16,21 +16,21 @@ class GroupBeliefUpdating:
     @classmethod
     def config(cls, updating_cfg):
 
-        mu_G0 = getattr(updating_cfg, "xi_mu_G0")
-        mu_B0 = getattr(updating_cfg, "xi_mu_B0")
+        mu_H0 = getattr(updating_cfg, "xi_mu_H0")
+        mu_L0 = getattr(updating_cfg, "xi_mu_L0")
 
         # Priors given as std devs in config; store as variances here
-        sigma_G0 = updating_cfg.xi_sigma_G
-        sigma_B0 = updating_cfg.xi_sigma_B
-        var0 = np.array([sigma_G0**2, sigma_B0**2], dtype=float)
+        sigma_H0 = updating_cfg.xi_sigma_H
+        sigma_L0 = updating_cfg.xi_sigma_L
+        var0 = np.array([sigma_H0**2, sigma_L0**2], dtype=float)
 
         # damage shock / observation noise -> std devs 
-        se_G = getattr(updating_cfg, "sigma_epsilon_G", 0.03)
-        se_B = getattr(updating_cfg, "sigma_epsilon_B", 0.03)
-        sigma_eps = np.array([se_G, se_B], dtype=float)
+        se_H = getattr(updating_cfg, "sigma_epsilon_H", 0.03)
+        se_L = getattr(updating_cfg, "sigma_epsilon_L", 0.03)
+        sigma_eps = np.array([se_H, se_L], dtype=float)
 
         return cls(
-            mu=np.array([mu_G0, mu_B0], dtype=float),
+            mu=np.array([mu_H0, mu_L0], dtype=float),
             var=var0,
             sigma_epsilon=sigma_eps,
         )
@@ -59,6 +59,6 @@ class GroupBeliefUpdating:
 
 
     def current_xi(self) -> tuple[float, float]:
-        """Return current posterior means (xî_G, xî_B)."""
+        """Return current posterior means (xî_H, xî_L)."""
         return float(self.mu[0]), float(self.mu[1])
 

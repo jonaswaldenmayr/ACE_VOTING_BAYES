@@ -9,8 +9,8 @@ class BeliefParameters:
     xi_mu_B0: float = 2.5
 
     # Initial prior standard deviations (σ_{ξ,0})
-    xi_sigma_G: float = 0.7        # Green group: open to new info
-    xi_sigma_B: float = 0.7
+    xi_sigma_H: float = 0.7        # Green group: open to new info
+    xi_sigma_L: float = 0.7
 
     # Damage shock noise (σ_ε)
     sigma_epsilon_G: float = 0.03

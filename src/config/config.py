@@ -40,28 +40,28 @@ class Parameters:
     num_voters: int = 1000    
     pol_slackness: float = 0.2                                      # slackness in the political system permits only ±20% changes per period                
     # Group shares
-    qG: float = 0.5
-    qB: float = 0.5
+    qH: float = 0.5
+    qL: float = 0.5
     #### Office Motivated Model ########################################
     # Perceived damage multiplier (remove once learning is implemented!!!)
-    xi_mult_G: float = 1.3 * xi
-    xi_mult_B: float = 0.7 * xi
+    xi_mult_H: float = 1.3 * xi
+    xi_mult_L: float = 0.7 * xi
     # UNIFORM taste noise
-    a_G: float = 1.0
-    a_B: float = 1.0
+    a_H: float = 1.0
+    a_L: float = 1.0
     ########################################################################################################
     ######## BAYES UPDATING ##################################################################################
     # Initial prior means (mu_{ξ,0})
-    xi_mu_G0: float = 0.1
-    xi_mu_B0: float = 0.05
+    xi_mu_H0: float = 0.1
+    xi_mu_L0: float = 0.05
 
     # Initial prior standard deviations (σ_{ξ,0})
-    xi_sigma_G = 0.9 * xi                   # Green group: open to new info
-    xi_sigma_B = 0.9 * xi        
+    xi_sigma_H = 0.9 * xi                   # Green group: open to new info
+    xi_sigma_L = 0.9 * xi        
 
     # Damage shock noise (σ_ε)
-    sigma_epsilon_G: float = 0.3
-    sigma_epsilon_B: float = 0.5    
+    sigma_epsilon_H: float = 0.3
+    sigma_epsilon_L: float = 0.5    
 
 def all_config() -> Parameters:
     return Parameters()

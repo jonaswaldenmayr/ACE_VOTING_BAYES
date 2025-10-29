@@ -37,17 +37,17 @@
 #         self.p = p
 
 #         # shares
-#         total_q = (p.qG + p.qB)
-#         qG = p.qG / total_q
-#         qB = p.qB / total_q
+#         total_q = (p.qH + p.qL)
+#         qH = p.qH / total_q
+#         qL = p.qL / total_q
 
 #         # perceived damages from multiplyers (to be updated later)
 #         xi_G = p.xi_mult_G * self.xi_physical
 #         xi_B = p.xi_mult_B * self.xi_physical
 
 #         self.groups = [
-#             Group(name="Green", share=qG, xi=xi_G, taste_scale=p.taste_scale_G),
-#             Group(name="Brown", share=qB, xi=xi_B, taste_scale=p.taste_scale_B),
+#             Group(name="Green", share=qH, xi=xi_G, taste_scale=p.taste_scale_G),
+#             Group(name="Brown", share=qL, xi=xi_B, taste_scale=p.taste_scale_B),
 #         ]
 
 #         def f_eta_zero(s: float) -> float:

@@ -46,22 +46,22 @@ def main():
 
         #### Update Beliefs
         # 1) Use LAST period's xi (the current prior) for the election
-        xi_G, xi_B = beliefs.current_xi()
-        print(f"Current xi's:", xi_B, xi_G)
+        xi_H, xi_L = beliefs.current_xi()
+        print(f"Current xi's:", xi_H, xi_L)
         # 2) Update NOW with THIS period's (M_t, D_t) for next time's prior
         beliefs.update(M_t=M_t, D_t=D_t)
 
         # Run election
-        E_star = voting.E_star(xi_G, xi_B, e_prev, cfg.pol_slackness) 
-        vote_share_G = 0.5
-        vote_share_B = 0.5
-        log_election(elections, t, E_star, xi_G, xi_B, vote_share=0.5)  # adjust vote_share when you have it
+        E_star = voting.E_star(xi_H, xi_L, e_prev, cfg.pol_slackness) 
+        vote_share_H = 0.5
+        vote_share_L = 0.5
+        log_election(elections, t, E_star, xi_H, xi_L, vote_share=0.5)  # adjust vote_share when you have it
 
 
         #tau, gv, bv = voting.run_election(dmg) # HAND OVER XI'S!!!!!!!!!!!!!!!!!!!!!
 
 
-        print(f"[Election t={t}] E*={E_star:.3f} | ξ̂_G={xi_G:.3f} | ξ̂_B={xi_B:.3f} | Vote Share: 50 / 50")
+        print(f"[Election t={t}] E*={E_star:.3f} | ξ̂_G={xi_H:.3f} | ξ̂_B={xi_L:.3f} | Vote Share: 50 / 50")
         e_prev = E_star
         return E_star  
     
