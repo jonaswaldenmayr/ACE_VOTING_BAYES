@@ -15,12 +15,12 @@ class Parameters:
     Y_init: float = 130.0                                           #in Trillion USD
     A_init: float = 16.09
     K_init: float = 130.0 * 3
-    E_before: float = 20                                             # E level in t-1   
     nu: float = 0.07                                                # fossil-energy dependency of production
     kappa: float = 0.30                                             # capital elasticity
     beta: float = 0.84                                              # discount factor
     tech_improvement_rate: float = 0.018  # per year
     prtp = 0.013896                                                 #pure rate of time preference -> currently not used
+    E_before: float = 20                                            # arbitrarily choosen E level in t-1   
     @property
     def E_bau(self) -> float:
         return self.BAU_E_CO2_init *(self.molar_mass_CO2/self.molar_mass_C)
@@ -38,17 +38,20 @@ class Parameters:
     ########################################################################################################
     ######## VOTING #########################################################################################
     num_voters: int = 1000    
-    pol_slackness: float = 0.2                                      # slackness in the political system permits only ±20% changes per period                
-    # Group shares
-    qH: float = 0.5
+    pol_slack: float = 0.2                                      # slackness in the political system permits only ±20% changes per period                
+    qH: float = 0.5                                                 # Group shares
     qL: float = 0.5
     #### Office Motivated Model ########################################
-    # Perceived damage multiplier (remove once learning is implemented!!!)
-    xi_mult_H: float = 1.3 * xi
-    xi_mult_L: float = 0.7 * xi
     # UNIFORM taste noise
-    a_H: float = 1.0
+    # a_H: float = 1.0
+    # a_L: float = 1.0
+    ########################################################################################################
+    #### Office Motivated Model ########################################
+    m_G: float = 0.5                                                 # office VS policy weight -> m=1 is purely office motivated
+    m_B: float = 0.5
+    a_H: float = 1.0                                                 # for uniform distr
     a_L: float = 1.0
+
     ########################################################################################################
     ######## BAYES UPDATING ##################################################################################
     # Initial prior means (mu_{ξ,0})

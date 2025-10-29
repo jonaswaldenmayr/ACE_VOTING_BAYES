@@ -2,6 +2,7 @@ from __future__ import annotations
 import numpy as np
 
 from src.voting.OfficeMotiv_model import OfficeMotivPVM, build_pvm_params, VotingOutcome
+from src.voting.PolicyOfficeMotiv_model import OfficePolicyMotivPVM, build_pvm_params
 from src.ACE.ACE_reduced import ACEModel_RF
 from src.plotting import plot_time_series, log_election, plot_election_series
 from src.updating.belief_updating import GroupBeliefUpdating
@@ -26,19 +27,18 @@ def main():
     #         xi_physical=cfg.ace.xi,
     #         p=cfg.voting,
     #     )
-    pvm_params = build_pvm_params(cfg, cfg)  
-    voting = OfficeMotivPVM(pvm_params)
+    pvm_params = build_pvm_params(cfg)  
+    voting = OfficePolicyMotivPVM(pvm_params)
     elections = []
 
     e_prev = cfg.E_bau
-    # e_prev = cfg.E_before
 
 
     #----- Set Start Beliefs ---------------------------------------
     beliefs = GroupBeliefUpdating.config(cfg)
 
     #----- Policy fn running the voting model & belief updates --------
-    def policy_fn(dmg: float, t) -> float: 
+    def policy_fn(D_t: float, t) -> float: 
         nonlocal e_prev
 
         # Observe current ACE state
@@ -52,9 +52,11 @@ def main():
         beliefs.update(M_t=M_t, D_t=D_t)
 
         # Run election
-        E_star = voting.E_star(xi_H, xi_L, e_prev, cfg.pol_slackness) 
-        vote_share_H = 0.5
-        vote_share_L = 0.5
+        E_star, P_G, P_B, E_G, E_B = voting.policy_and_election(
+            xi_H,
+            xi_L,
+            e_prev
+        )
         log_election(elections, t, E_star, xi_H, xi_L, vote_share=0.5)  # adjust vote_share when you have it
 
 

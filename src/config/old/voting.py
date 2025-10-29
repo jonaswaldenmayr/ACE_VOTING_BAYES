@@ -12,9 +12,7 @@ class VotingParameters:
     qL: float = 0.5
 
     #### Office Motivated Model ########################################
-    # Perceived damage multiplier (remove once learning is implemented!!!)
-    xi_mult_H: float = 1.3
-    xi_mult_L: float = 0.7
+
     
     # UNIFORM taste noise
     a_G: float = 1.0
