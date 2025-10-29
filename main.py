@@ -1,12 +1,11 @@
 from __future__ import annotations
 import numpy as np
 
-from src.config.app import all_config
 from src.voting.OfficeMotiv_model import OfficeMotivPVM, build_pvm_params, VotingOutcome
-from src.voting.simple_test_model import TestVotingModel
 from src.ACE.ACE_reduced import ACEModel_RF
 from src.plotting import plot_time_series, log_election, plot_election_series
 from src.updating.belief_updating import GroupBeliefUpdating
+from src.config.config import Parameters, all_config
 
 
 
@@ -14,15 +13,9 @@ from src.updating.belief_updating import GroupBeliefUpdating
 def main():
     cfg = all_config()
 
-    print("Parameters - core:", cfg.core)
-    print("Parameters – ACE :", cfg.ace)
-    print("Parameters – vote:", cfg.voting)
-    print("Parameters – updating:", cfg.updating)
-
 
     #--- ACE -------------------------------------------------------
-    ACE = ACEModel_RF(cfg.ace, cfg.core)
-
+    ACE = ACEModel_RF(cfg, cfg)   
     #----- Voting Model --------------------------------------------
     # voting = TestVotingModel(
     #         E_bar=cfg.ace.E_bar,     # this is the E baseline level for the period
@@ -33,13 +26,13 @@ def main():
     #         xi_physical=cfg.ace.xi,
     #         p=cfg.voting,
     #     )
-    pvm_params = build_pvm_params(cfg.ace, cfg.voting)  
+    pvm_params = build_pvm_params(cfg, cfg)  
     voting = OfficeMotivPVM(pvm_params)
     elections = []
 
 
     #----- Set Start Beliefs ---------------------------------------
-    beliefs = GroupBeliefUpdating.config(cfg.updating)
+    beliefs = GroupBeliefUpdating.config(cfg)
 
     #----- Policy fn running the voting model & belief updates --------
     def policy_fn(dmg: float, t) -> float: 
@@ -50,6 +43,7 @@ def main():
         #### Update Beliefs
         # 1) Use LAST period's xi (the current prior) for the election
         xi_G, xi_B = beliefs.current_xi()
+        print(f"Current xi's:", xi_B, xi_G)
         # 2) Update NOW with THIS period's (M_t, D_t) for next time's prior
         beliefs.update(M_t=M_t, D_t=D_t)
 
@@ -70,7 +64,7 @@ def main():
     ACE.simulate(policy_fn)
 
     #----- Plotting ---------------------------------------------------
-    years = np.arange(cfg.core.start_year, cfg.core.start_year + cfg.core.period_len * ACE.T, cfg.core.period_len)
+    years = np.arange(cfg.start_year, cfg.start_year + cfg.period_len * ACE.T, cfg.period_len)
     plot_election_series(elections, years)
     plot_time_series(ACE.Y, x=years, title="GDP Y", xlabel="Year", ylabel="GDP")
     plot_time_series(ACE.K, x=years, title="Capital K", xlabel="Year", ylabel="Capital")

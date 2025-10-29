@@ -3,8 +3,7 @@ from dataclasses import dataclass
 from typing import Callable, Dict
 import numpy as np
 
-from src.config.core import CoreSettings
-from src.config.ace import ACEParameters
+from src.config.config import Parameters
 #from src.learning.belief_updating import BeliefUpdating
 
 
@@ -38,7 +37,7 @@ class ACEModel_RF:
     """
     ...
 
-    def __init__(self, p: ACEParameters, core: CoreSettings):
+    def __init__(self, p: Parameters, core: Parameters):
         self.p = p
         self.core = core
         self.dt = int(core.period_len)                                                      # years per period
