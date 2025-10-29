@@ -7,7 +7,7 @@ class Parameters:
     ########################################################################################################
     ######## CORE ###########################################################################################
     period_len: int = 10
-    periods: int = 30
+    periods: int = 10
     start_year: int = 2020
     ########################################################################################################
     ######## ACE ###########################################################################################
@@ -39,17 +39,18 @@ class Parameters:
     ######## VOTING #########################################################################################
     num_voters: int = 1000    
     pol_slack: float = 0.2                                      # slackness in the political system permits only ±20% changes per period                
-    qH: float = 0.5                                                 # Group shares
-    qL: float = 0.5
+    qH: float = 0.1                                                 # Group shares
+    qL: float = 0.9
     #### Office Motivated Model ########################################
     # UNIFORM taste noise
     # a_H: float = 1.0
     # a_L: float = 1.0
     ########################################################################################################
     #### Office Motivated Model ########################################
-    m_G: float = 0.5                                                 # office VS policy weight -> m=1 is purely office motivated
-    m_B: float = 0.5
-    a_H: float = 1.0                                                 # for uniform distr
+    m_G: float = 0.50                                                 # office VS policy weight -> m=1 is purely office motivated
+    m_B: float = 0.50
+    a_unified: float = 20                                             # for uniform distr
+    a_H: float = 1.0                                                 
     a_L: float = 1.0
 
     ########################################################################################################

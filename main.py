@@ -30,6 +30,8 @@ def main():
     pvm_params = build_pvm_params(cfg)  
     voting = OfficePolicyMotivPVM(pvm_params)
     elections = []
+    vote_G, vote_B = [], []
+    E_G_series, E_B_series = [], []
 
     e_prev = cfg.E_bau
 
@@ -51,33 +53,56 @@ def main():
         # 2) Update NOW with THIS period's (M_t, D_t) for next time's prior
         beliefs.update(M_t=M_t, D_t=D_t)
 
+        #####################
+        ## update ###########
+        E_SCC = e_prev * 0.6
+        E_bau = e_prev
+        #####################
+
         # Run election
-        E_star, P_G, P_B, E_G, E_B = voting.policy_and_election(
+        E_star, V_G, V_B, E_G, E_B = voting.policy_and_election(
             xi_H,
             xi_L,
-            e_prev
+            E_SCC,
+            E_BAU = e_prev+10,
         )
-        log_election(elections, t, E_star, xi_H, xi_L, vote_share=0.5)  # adjust vote_share when you have it
+        log_election(elections, t, E_star, xi_H, xi_L, vote_share=V_G)  
+        vote_G.append(V_G); vote_B.append(V_B)
+        E_G_series.append(E_G); E_B_series.append(E_B)
 
-
-        #tau, gv, bv = voting.run_election(dmg) # HAND OVER XI'S!!!!!!!!!!!!!!!!!!!!!
-
-
-        print(f"[Election t={t}] E*={E_star:.3f} | ξ̂_G={xi_H:.3f} | ξ̂_B={xi_L:.3f} | Vote Share: 50 / 50")
+        print(f"[Election t={t}] E*={E_star:.3f} | ξ̂_G={xi_H:.3f} | ξ̂_B={xi_L:.3f} | Vote Share(G/B): {V_G:.3f} / {V_B:.3f}")
         e_prev = E_star
         return E_star  
     
     #----- Simulate ---------------------------------------------------
     ACE.simulate(policy_fn)
 
+
+
+
+    #----- Plotting ---------------------------------------------------
     #----- Plotting ---------------------------------------------------
     years = np.arange(cfg.start_year, cfg.start_year + cfg.period_len * ACE.T, cfg.period_len)
-    plot_election_series(elections, years)
+    
+    # match years to number of elections actually logged
+    years_elec = years[:len(elections)]
+    
+    # elections chart (beliefs & E*)
+    plot_election_series(elections, years_elec)
+    
+    # vote shares & platforms (use the arrays we collected)
+    plot_time_series(vote_G, x=years_elec, title="Vote share – Green", xlabel="Year", ylabel="Share (0–1)")
+    plot_time_series(vote_B, x=years_elec, title="Vote share – Brown", xlabel="Year", ylabel="Share (0–1)")
+    plot_time_series(E_G_series, x=years_elec, title="Party platform E_G", xlabel="Year", ylabel="Emissions policy")
+    plot_time_series(E_B_series, x=years_elec, title="Party platform E_B", xlabel="Year", ylabel="Emissions policy")
+    
+    # existing macro series
     plot_time_series(ACE.Y, x=years, title="GDP Y", xlabel="Year", ylabel="GDP")
     plot_time_series(ACE.K, x=years, title="Capital K", xlabel="Year", ylabel="Capital")
     plot_time_series(ACE.D, x=years, title="Damages D", xlabel="Year", ylabel="Damage")
     plot_time_series(ACE.M[1:], x=years, title="Atmospheric Carbon M", xlabel="Year", ylabel="Carbon (GtC)")
     plot_time_series(ACE.E, x=years, title="Emissions policy (per year)", xlabel="Year", ylabel="E (per year)")
+
 
 
 
