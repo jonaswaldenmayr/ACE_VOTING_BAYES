@@ -4,7 +4,7 @@ import numpy as np
 from src.voting.OfficeMotiv_model import OfficeMotivPVM, build_pvm_params, VotingOutcome
 from src.voting.PolicyOfficeMotiv_model import OfficePolicyMotivPVM, build_pvm_params
 from src.ACE.ACE_reduced import ACEModel_RF
-from src.plotting import plot_time_series, log_election, plot_election_series
+from src.plotting import plot_time_series, log_election, plot_election_series, plot_time_series_multi
 from src.updating.belief_updating import GroupBeliefUpdating
 from src.config.config import Parameters, all_config
 
@@ -44,27 +44,44 @@ def main():
         nonlocal e_prev
 
         # Observe current ACE state
-        M_t, D_t = ACE.M[t], ACE.D[t]
+        Y_t, M_t, D_t, SCC_t = ACE.Y[t], ACE.M[t], ACE.D[t], ACE.SCC[t]
+
 
         #### Update Beliefs
         # 1) Use LAST period's xi (the current prior) for the election
         xi_H, xi_L = beliefs.current_xi()
         print(f"Current xi's:", xi_H, xi_L)
         # 2) Update NOW with THIS period's (M_t, D_t) for next time's prior
-        beliefs.update(M_t=M_t, D_t=D_t)
+        beliefs.update(M_t=M_t, D_t=D_t, M_pre = cfg.M_init)
 
         #####################
         ## update ###########
-        E_SCC = e_prev * 0.6
-        E_bau = e_prev
+        E_SCC = e_prev
+        # E_bau = e_prev
+        E_bau = cfg.E_before
+
+
+
+        xi_weight_avg = cfg.qH*xi_H + cfg.qL*xi_L
+        E_SCC_weight = (cfg.nu / xi_weight_avg)*((1/cfg.beta)-(1-cfg.delta))
+        print(f"SCC:", SCC_t)
+        print(f"Xi_H: {xi_H:.10f}")
+        print(f"Xi_L: {xi_L:.10f}")
+        print(f"Xi_w: {xi_weight_avg:.10f}")
+        print(f"Xi t: {cfg.xi:.10f}")
+        print(f"E_SCC_weight", E_SCC_weight)
+
+
         #####################
 
         # Run election
         E_star, V_G, V_B, E_G, E_B = voting.policy_and_election(
             xi_H,
             xi_L,
-            E_SCC,
-            E_BAU = e_prev+10,
+            E_SCC = 682,
+            # E_BAU = e_prev,       # E init
+            # E_BAU = cfg.E_bau,      # E t-1
+            E_BAU = E_bau,            # E test
         )
         log_election(elections, t, E_star, xi_H, xi_L, vote_share=V_G)  
         vote_G.append(V_G); vote_B.append(V_B)
@@ -83,19 +100,29 @@ def main():
     #----- Plotting ---------------------------------------------------
     #----- Plotting ---------------------------------------------------
     years = np.arange(cfg.start_year, cfg.start_year + cfg.period_len * ACE.T, cfg.period_len)
-    
+
     # match years to number of elections actually logged
     years_elec = years[:len(elections)]
-    
+
+
+    plot_time_series_multi(
+        {"Green": vote_G, "Brown": vote_B},
+        x=years_elec,
+        title="Vote shares (Green vs Brown)",
+        xlabel="Year",
+        ylabel="Share (0–1)"
+        )
+
+
     # elections chart (beliefs & E*)
     plot_election_series(elections, years_elec)
-    
+
     # vote shares & platforms (use the arrays we collected)
     plot_time_series(vote_G, x=years_elec, title="Vote share – Green", xlabel="Year", ylabel="Share (0–1)")
     plot_time_series(vote_B, x=years_elec, title="Vote share – Brown", xlabel="Year", ylabel="Share (0–1)")
     plot_time_series(E_G_series, x=years_elec, title="Party platform E_G", xlabel="Year", ylabel="Emissions policy")
     plot_time_series(E_B_series, x=years_elec, title="Party platform E_B", xlabel="Year", ylabel="Emissions policy")
-    
+
     # existing macro series
     plot_time_series(ACE.Y, x=years, title="GDP Y", xlabel="Year", ylabel="GDP")
     plot_time_series(ACE.K, x=years, title="Capital K", xlabel="Year", ylabel="Capital")

@@ -52,6 +52,7 @@ class ACEModel_RF:
         self.D = np.zeros(self.T)
         self.M = np.zeros(self.T + 1)
         self.E = np.zeros(self.T)
+        self.SCC = np.zeros(self.T)
 
         # Init state at t=0
         self.M[0] = p.M_init
@@ -104,6 +105,11 @@ class ACEModel_RF:
         )
         self.M[t + 1] = (1.0 - p.delta) ** dt * self.M[t] + E_step
         self.A[t + 1] = self.A[t] * (1.0 + p.tech_improvement_rate) ** dt
+        
+        SCC_t = p.xi * (Y_t * (1-D_t)) / (1 - p.beta * (1-p.delta))
+        E_SCC = (p.nu / p.xi)*((1/p.beta)-(1-p.delta))
+        print(f"xi true:", p.xi)
+        print(f"E_SCC",E_SCC)
 
         # Save
         self.E[t] = E_year             # store per-year policy for readability
@@ -111,13 +117,16 @@ class ACEModel_RF:
         self.Y[t] = Y_t
         self.C[t] = C_t
         self.K[t] = K_t
+        self.SCC[t] = SCC_t
+
 
         print(f"Y",Y_t)
         print(f"C",C_t)
         print(f"K",K_t)
         print(f"D",D_t)
+        print(f"SCC", SCC_t)
 
-        return {"Y": Y_t, "C": C_t, "K": K_t, "E_year": E_year, "D": D_t, "A": self.A[t], "M": self.M[t]}
+        return {"Y": Y_t, "C": C_t, "K": K_t, "E_year": E_year, "D": D_t, "A": self.A[t], "M": self.M[t], "SCC_t": SCC_t}
 
     def simulate(self, policy_fn):
         for t in range(self.T):

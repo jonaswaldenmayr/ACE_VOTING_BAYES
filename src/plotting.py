@@ -52,3 +52,22 @@ def plot_time_series(Y, x=None, title=None, xlabel='Year', ylabel='Value',
     if show:
         plt.show()
     return fig, ax
+
+def plot_time_series_multi(series: dict[str, list[float] | np.ndarray],
+                           x: list[float] | np.ndarray | None = None,
+                           title: str = "",
+                           xlabel: str = "",
+                           ylabel: str = "") -> None:
+    import matplotlib.pyplot as plt
+    plt.figure()
+    for label, y in series.items():
+        y = np.asarray(y)
+        x_vals = np.arange(len(y)) if x is None else np.asarray(x)[:len(y)]
+        plt.plot(x_vals, y, label=label)
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show()

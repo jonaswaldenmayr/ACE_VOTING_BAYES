@@ -37,12 +37,13 @@ class GroupBeliefUpdating:
 
         
 
-    def update(self, M_t: float, D_t: float):
+    def update(self, M_t: float, D_t: float, M_pre: float):
         """
         Bayesian update with y_t = log(1 - D_t) = xi * M_t + eps, eps ~ N(0, sigma_eps^2).
         """
 
-        y_t = float(np.log(1.0 - D_t))
+        y_t = float(-np.log(1.0 - D_t))
+        M_t = (M_t - M_pre)
         M2 = M_t * M_t
 
         # Vectorized per group

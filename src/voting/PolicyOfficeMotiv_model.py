@@ -94,6 +94,7 @@ class OfficePolicyMotivPVM:
         E_G = self._solve_green_max(self.p.m_G, c, sum_phi_M, E_SCC)
         E_B = self._solve_brown_max(self.p.m_B, c, sum_phi_M, E_BAU)
         
+        print("")
         print("###############################")
         print(E_G)
         print(E_B)
