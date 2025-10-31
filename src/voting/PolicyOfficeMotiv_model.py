@@ -93,29 +93,20 @@ class OfficePolicyMotivPVM:
         # Office & Policy Motivation (platforms diverge)
         E_G = self._solve_green_max(self.p.m_G, c, sum_phi_M, E_SCC)
         E_B = self._solve_brown_max(self.p.m_B, c, sum_phi_M, E_BAU)
-        
-        print("")
-        print("###############################")
-        print(E_G)
-        print(E_B)
+    
 
         # Compute expected vote share using uniform shocks:
         # Δw_j = ν[log(E_G) - log(E_B)] + φ_{M,j}(E_G - E_B)
         welf_diff_H = self.p.nu * (math.log(E_G) - math.log(E_B)) + phi_M_H * (E_G - E_B)
         welf_diff_L = self.p.nu * (math.log(E_G) - math.log(E_B)) + phi_M_L * (E_G - E_B)
-        print(f"welf_diff_H", welf_diff_H)
-        print(f"welf_diff_L", welf_diff_L)
         # F(z) = (z + a)/(2a) for μ=0, clipped to [0,1]
         F_H = (welf_diff_H + a_eff) / (2.0 * a_eff)
         F_L = (welf_diff_L + a_eff) / (2.0 * a_eff)
-        print(f"F_H", F_H)
-        print(f"F_L", F_L)
         # V_G(E_G, E_B) = sum_j q_j F(Δw_j) with F(z) = (z - (mu-a)) / (2a), clipped to [0,1].
         V_G = self.p.qH * F_H + self.p.qL * F_L
         V_B = 1 - V_G
         print(f"Vote share Green:", V_G)
         print(f"Vote share Brown:", V_B)
-        print("###############################")
 
 
         # Winner by expected plurality 
@@ -159,18 +150,47 @@ class OfficePolicyMotivPVM:
         """
         0 = 2(1-m) E_G^2 - [2(1-m)E_SCC - m c bar_phi_M] E_G - m c nu
         """
+
+        r = 3000
+        c = c*r
+
         A = 2.0 * (1.0 - m)
         B = - (2.0 * (1.0 - m) * E_SCC - m * c * sum_phi_M)
         C = - m * c * self.p.nu    
 
         disc = B * B - 4.0 * A * C
         root = (-B + math.sqrt(disc)) / (2.0 * A)
+
+        print(f"GREEN MAX Original", root)
+
+        obj = ((2*(1-m)*E_SCC + m * c * sum_phi_M)**2) + 8*(1-m)* m * c * self.p.nu
+
+        pos_root = math.sqrt(obj)
+
+        infront = (2 * (1 - m) * E_SCC + m * c * sum_phi_M)
+
+        numerator = pos_root + infront
+        denominator = 4*(1-m)
+
+        E_G = (2 * (1 - m) * E_SCC + m * c * sum_phi_M + pos_root) / (4*(1-m))
+
+        
+        print(f"infront",infront)
+        print(f"pos root",pos_root)
+        print(f"numerator:", numerator)
+        print(f"denominator:", denominator)
+        
+
+        print(f"GREEN MAX NEW", E_G)
+
         return max(root, 0.0)
 
     def _solve_brown_max(self, m: float, c: float, sum_phi_M: float, E_BAU: float) -> float:
         """
         0 = 2(1-m) E_B^2 - [2(1-m)E_BAU - m c bar_phi_M] E_B + m c nu
         """
+        r = -5000
+        c = c*r
         A = 2.0 * (1.0 - m)
         B = - (2.0 * (1.0 - m) * E_BAU - m * c * sum_phi_M)
         C = + m * c * self.p.nu

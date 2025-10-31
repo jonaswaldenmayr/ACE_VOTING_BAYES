@@ -14,19 +14,19 @@ class Parameters:
     # Economy
     Y_init: float = 130.0                                           #in Trillion USD
     A_init: float = 16.09
-    K_init: float = 130.0 * 3
-    nu: float = 0.3                                                # fossil-energy dependency of production
+    K_init: float = 130.0 * 1
+    nu: float = 0.3                                              # fossil-energy dependency of production
     kappa: float = 0.30                                             # capital elasticity
     beta: float = 0.84                                              # discount factor
     tech_improvement_rate: float = 0.018  # per year
     prtp = 0.013896                                                 #pure rate of time preference -> currently not used
-    E_before: float = 100                                            # arbitrarily choosen E level in t-1   
+    E_before: float = 1200                                            # arbitrarily choosen E level in t-1   
     @property
     def E_bau(self) -> float:
         return self.BAU_E_CO2_init *(self.molar_mass_CO2/self.molar_mass_C)
     # Climate
     xi: float = 0.00008817                                          #0.0002046, 00008817
-    delta: float = 0.01                                             # carbon decay rate
+    delta: float = 0.03                                            # carbon decay rate
     ppm_value: float = 427.0
     ppm_to_GtC: float = 2.31
     BAU_E_CO2_init: float = 35.0
@@ -39,33 +39,33 @@ class Parameters:
     ######## VOTING #########################################################################################
     num_voters: int = 10000    
     pol_slack: float = 0.2                                      # slackness in the political system permits only ±20% changes per period                
-    qH: float = 0.3                                                 # Group shares
-    qL: float = 0.7
+    qH: float = 0.2                                                 # Group shares
+    qL: float = 0.8
     #### Office Motivated Model ########################################
     # UNIFORM taste noise
     # a_H: float = 1.0
     # a_L: float = 1.0
     ########################################################################################################
     #### Office Motivated Model ########################################
-    m_G: float = 0.50                                                 # office VS policy weight -> m=1 is purely office motivated
-    m_B: float = 0.50
-    a_unified: float = 30                                             # for uniform distr
-    a_H: float = 1.0                                                 
-    a_L: float = 1.0
+    m_G: float = 0.5                                                 # office VS policy weight -> m=1 is purely office motivated
+    m_B: float = 0.8
+    a_unified: float = 0.05                                            # for uniform distr
+    a_H: float = 1                                                 
+    a_L: float = 1
 
     ########################################################################################################
     ######## BAYES UPDATING ##################################################################################
     # Initial prior means (mu_{ξ,0})
-    xi_mu_H0: float = 0.008
-    xi_mu_L0: float = 0.0005
+    xi_mu_H0: float = 0.00012
+    xi_mu_L0: float = 0.000005
 
     # Initial prior standard deviations (σ_{ξ,0})
-    xi_sigma_H = 20 * xi                   # Green group: open to new info
-    xi_sigma_L = 20 * xi        
+    xi_sigma_H = 7000 * xi                   # Green group: open to new info
+    xi_sigma_L = 5000 * xi        
 
     # Damage shock noise (σ_ε)
-    sigma_epsilon_H: float = 0.3
-    sigma_epsilon_L: float = 0.3  
+    sigma_epsilon_H: float = 30000
+    sigma_epsilon_L: float = 30000
 
 def all_config() -> Parameters:
     return Parameters()

@@ -108,9 +108,7 @@ class ACEModel_RF:
         
         SCC_t = p.xi * (Y_t * (1-D_t)) / (1 - p.beta * (1-p.delta))
         E_SCC = (p.nu / p.xi)*((1/p.beta)-(1-p.delta))
-        print(f"xi true:", p.xi)
-        print(f"E_SCC",E_SCC)
-
+        
         # Save
         self.E[t] = E_year             # store per-year policy for readability
         self.D[t] = D_t
@@ -120,16 +118,29 @@ class ACEModel_RF:
         self.SCC[t] = SCC_t
 
 
-        print(f"Y",Y_t)
-        print(f"C",C_t)
+        # print(f"Y",Y_t)
+        # print(f"C",C_t)
         print(f"K",K_t)
-        print(f"D",D_t)
-        print(f"SCC", SCC_t)
+        # print(f"D",D_t)
+        # print(f"SCC", SCC_t)
 
         return {"Y": Y_t, "C": C_t, "K": K_t, "E_year": E_year, "D": D_t, "A": self.A[t], "M": self.M[t], "SCC_t": SCC_t}
 
-    def simulate(self, policy_fn):
+    # def simulate(self, policy_fn):
+    #     for t in range(self.T):
+    #         E = policy_fn(self.D[t], t)
+    #         self.step(t, E)
+    #     return self
+
+    def simulate(self, policy_fn, learn_fn):
+        E = policy_fn(0)
+
         for t in range(self.T):
-            E = policy_fn(self.D[t], t)
             self.step(t, E)
-        return self
+            learn_fn(t, self.M[t], self.D[t])
+            if t < self.T - 1:
+                E = policy_fn(t+1)
+            
+            print("")
+            print("")
+            print("#####################################################################")
