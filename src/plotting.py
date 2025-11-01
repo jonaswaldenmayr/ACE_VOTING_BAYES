@@ -70,4 +70,5 @@ def plot_time_series_multi(series: dict[str, list[float] | np.ndarray],
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
+    # plt.savefig("test.pdf", dpi=300, bbox_inches="tight")
     plt.show()

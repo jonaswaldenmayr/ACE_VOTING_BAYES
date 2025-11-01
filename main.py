@@ -85,53 +85,6 @@ def main():
 
 
 
-
-
-
-
-    #----- Policy fn running the voting model & belief updates --------
-    # def policy_fn(t: int) -> float: 
-    #     nonlocal e_prev
-    #     xi_H, xi_L = beliefs.current_xi()                                                   # 1) Use LAST period's xi (the current prior) for the election
-    #     print(f"[t={t}] ACE says: M={ACE.M[t]:.4f}, D={ACE.D[t]:.6f}, xi_true={ACE.p.xi:.10f}")
-
-    #     # Observe current ACE state
-    #     Y_t, M_t, D_t, SCC_t = ACE.Y[t], ACE.M[t], ACE.D[t], ACE.SCC[t]
-
-    #     #### Update Beliefs
-    #     print(f"Current xi's:", xi_H, xi_L)
-    #     beliefs.update01(M_t=M_t, D_t=D_t, M_pre = cfg.M_init)                              # 2) Update  with THIS period's (M_t, D_t) for next time's prior
-
-    #     #####################
-    #     ## update ###########
-    #     E_SCC = e_prev
-    #     xi_weight_avg = cfg.qH*xi_H + cfg.qL*xi_L
-    #     E_SCC_weight = (cfg.nu / xi_weight_avg)*((1/cfg.beta)-(1-cfg.delta))
-    #     # E_bau = e_prev
-    #     E_bau = cfg.E_before
-    #     ####################
-    #     print(f"SCC:", SCC_t)
-    #     print(f"Xi_H: {xi_H:.10f}")
-    #     print(f"Xi_L: {xi_L:.10f}")
-    #     print(f"Xi_w: {xi_weight_avg:.10f}")
-    #     print(f"Xi t: {cfg.xi:.10f}")
-    #     print(f"E_SCC_weight", E_SCC_weight)
-
-    #     # Run election
-    #     E_star, V_G, V_B, E_G, E_B = voting.policy_and_election(
-    #         xi_H,
-    #         xi_L,
-    #         E_SCC = E_SCC_weight,
-    #         # E_BAU = e_prev,       # E init
-    #         # E_BAU = cfg.E_bau,      # E t-1
-    #         E_BAU = E_bau,            # E test
-    #     )
-
-    #     log_election(elections, t, E_star, xi_H, xi_L, vote_share=V_G)  
-    #     vote_G.append(V_G); vote_B.append(V_B); E_G_series.append(E_G); E_B_series.append(E_B)
-    #     print(f"[Election t={t}] E*={E_star:.3f} | ξ̂_G={xi_H:.3f} | ξ̂_B={xi_L:.3f} | Vote Share(G/B): {V_G:.3f} / {V_B:.3f}")
-    #     e_prev = E_star
-    #     return E_star  
     
     #----- Simulate ---------------------------------------------------
     ACE.simulate(policy_fn, learn_fn)
