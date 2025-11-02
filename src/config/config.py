@@ -38,8 +38,8 @@ class Parameters:
     ########################################################################################################
     ######## VOTING #########################################################################################
     num_voters: int = 10000    
-    qH: float = 0.20                                                             # Group shares
-    qL: float = 0.80
+    qH: float = 0.15                                                             # Group shares
+    qL: float = 0.85
     #### Office Motivated Model ########################################
     # UNIFORM taste noise
     # a_H: float = 1.0
@@ -48,8 +48,8 @@ class Parameters:
     ########################################################################################################
     #### Office Motivated Model ########################################
     m_G: float = 0.5                                                             # office VS policy weight -> m=1 is purely office motivated
-    m_B: float = 0.8
-    a_unified: float = 0.1                                                     # for uniform distr
+    m_B: float = 0.5
+    a_unified: float = 0.05                                                     # for uniform distr
     a_H: float = 1                                                 
     a_L: float = 1
 
@@ -57,15 +57,15 @@ class Parameters:
     ######## BAYES UPDATING ##################################################################################
     # Initial prior means (mu_{ξ,0})
     xi_mu_H0: float = 0.00028
-    xi_mu_L0: float = 0.00010
+    xi_mu_L0: float = 0.00007
 
     # Initial prior standard deviations (σ_{ξ,0})
-    xi_sigma_H = 28000 * xi                   # Green group: open to new info
-    xi_sigma_L = 28000 * xi        
+    xi_sigma_H = 40000 * xi                   # Green group: open to new info
+    xi_sigma_L = 34000 * xi        
 
     # Damage shock noise (σ_ε)
     sigma_epsilon_H: float = 40000
-    sigma_epsilon_L: float = 40000
+    sigma_epsilon_L: float = 30000
 
 def all_config() -> Parameters:
     return Parameters()

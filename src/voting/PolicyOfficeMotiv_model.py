@@ -203,7 +203,7 @@ class OfficePolicyMotivPVM:
         """
         0 = 2(1-m) E_B^2 - [2(1-m)E_BAU - m c bar_phi_M] E_B + m c nu
         """
-        #c = c * 5000
+        c = c * -1100
         A = 2.0 * (1.0 - m)
         B = - (2.0 * (1.0 - m) * E_BAU - m * c * sum_phi_M)
         C = + m * c * self.p.nu
@@ -215,8 +215,9 @@ class OfficePolicyMotivPVM:
     def _E_SCC_level(self, xi_H:float, xi_L:float, t:int) -> float:
         xi_combined = xi_H*self.p.qH + xi_L * self.p.qL
         level_scale = 0.02                                                       # 2020 calibration
-        red_scale = (t*0.005)
+        red_scale = (t*0.008)
         E_SCC = ((self.p.nu / xi_combined)*(1/self.p.beta)-(1-self.p.delta)) * level_scale - red_scale
+        print(f"ESCC: ", E_SCC)
         return E_SCC
 
     @staticmethod
