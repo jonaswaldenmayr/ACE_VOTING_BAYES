@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from typing import Dict, Tuple, Optional
 import math
 
+from src.helpers import pol_system_cal
+
 @dataclass(slots=True)
 class OfficePolicyParams:
     nu: float
@@ -55,11 +57,12 @@ class OfficePolicyMotivPVM:
 
     def policy_and_election(
         self,
+        t: int,
         xi_H: float,
         xi_L: float,
 
-        E_SCC: float,
         E_BAU: float,
+        E_SCC: float | None = None,
 
     ) -> Tuple[float]:
         """
@@ -67,11 +70,27 @@ class OfficePolicyMotivPVM:
           (E_winner, V_G, V_B, E_G, E_B)
         """
 
+        xi_phy = 0.0002046
+        xi_old = 0.00008
+        scale = xi_old/xi_phy
+
+
+
         E_floor = 1e-12
 
+        E_BAU = E_BAU *10 # scaled to decade
+
+        E_SCC = self._E_SCC_level(xi_H, xi_L, t)
+
+        cl = pol_system_cal(t)
+
+
+        print(f"E_SCC: ", E_SCC)
+        print(f"E_bau: ", E_BAU)
+
         # φ_{M,j} for each group from ξ̂_j
-        phi_M_H = self._phi_M(xi_H)
-        phi_M_L =  self._phi_M(xi_L)
+        phi_M_H = self._phi_M(xi_H,cl)*scale
+        phi_M_L =  self._phi_M(xi_L,cl)*scale
         
         sum_phi_M = self.p.qH * phi_M_H + self.p.qL * phi_M_L
 
@@ -97,16 +116,28 @@ class OfficePolicyMotivPVM:
 
         # Compute expected vote share using uniform shocks:
         # Δw_j = ν[log(E_G) - log(E_B)] + φ_{M,j}(E_G - E_B)
-        welf_diff_H = self.p.nu * (math.log(E_G) - math.log(E_B)) + phi_M_H * (E_G - E_B)
-        welf_diff_L = self.p.nu * (math.log(E_G) - math.log(E_B)) + phi_M_L * (E_G - E_B)
+        
+        ddd = self.p.nu * (math.log(E_G) - math.log(E_B))
+        ppp = (phi_M_L) * (E_G - E_B)
+        print(ddd)
+        print(ppp)
+
+
+
+        welf_diff_H = self.p.nu * (math.log(E_G) - math.log(E_B)) + (phi_M_H) * (E_G - E_B)
+        welf_diff_L = self.p.nu * (math.log(E_G) - math.log(E_B)) + (phi_M_L) * (E_G - E_B)
+        print(f"welf_diff_H", welf_diff_H)
+        print(f"welf_diff_L", welf_diff_L)
         # F(z) = (z + a)/(2a) for μ=0, clipped to [0,1]
         F_H = (welf_diff_H + a_eff) / (2.0 * a_eff)
         F_L = (welf_diff_L + a_eff) / (2.0 * a_eff)
         # V_G(E_G, E_B) = sum_j q_j F(Δw_j) with F(z) = (z - (mu-a)) / (2a), clipped to [0,1].
-        V_G = self.p.qH * F_H + self.p.qL * F_L
+        V_G = self.p.qH * self._clip(F_H) + self.p.qL * self._clip(F_L)
         V_B = 1 - V_G
         print(f"Vote share Green:", V_G)
         print(f"Vote share Brown:", V_B)
+        # input("Press Enter to continue...")
+
 
 
         # Winner by expected plurality 
@@ -119,7 +150,7 @@ class OfficePolicyMotivPVM:
         self.last_V_G, self.last_V_B = V_G, V_B
         self.last_E_star = E_star
 
-        return E_star, V_G, V_B, E_G, E_B
+        return E_star, V_G, V_B, E_G, E_B, E_SCC
 
 
 
@@ -140,20 +171,18 @@ class OfficePolicyMotivPVM:
     
         return 0.0 if E_clamped < 0.0 else E_clamped
 
-    def _phi_M(self, xi_hat_j: float) -> float:
+    def _phi_M(self, xi_hat_j: float, cl:float) -> float:
         # φ_{M,j} = - ξ̂_j / ((1 - β(1-δ)) (1 - βκ))
         beta, delta, kappa = self.p.beta, self.p.delta, self.p.kappa
         denom = (1.0 - beta * (1.0 - delta)) * (1.0 - beta * kappa)
-        return - xi_hat_j / denom
+        return (- xi_hat_j  / denom) * cl
 
     def _solve_green_max(self, m: float, c: float, sum_phi_M: float, E_SCC: float) -> float:
         """
         0 = 2(1-m) E_G^2 - [2(1-m)E_SCC - m c bar_phi_M] E_G - m c nu
         """
 
-        r = 3000
-        c = c*r
-
+        c = c*(5000)
         A = 2.0 * (1.0 - m)
         B = - (2.0 * (1.0 - m) * E_SCC - m * c * sum_phi_M)
         C = - m * c * self.p.nu    
@@ -161,27 +190,27 @@ class OfficePolicyMotivPVM:
         disc = B * B - 4.0 * A * C
         root = (-B + math.sqrt(disc)) / (2.0 * A)
 
-        print(f"GREEN MAX Original", root)
+        # print(f"GREEN MAX Original", root)
 
-        obj = ((2*(1-m)*E_SCC + m * c * sum_phi_M)**2) + 8*(1-m)* m * c * self.p.nu
+        # obj = ((2*(1-m)*E_SCC + m * c * sum_phi_M)**2) + 8*(1-m)* m * c * self.p.nu
 
-        pos_root = math.sqrt(obj)
+        # pos_root = math.sqrt(obj)
 
-        infront = (2 * (1 - m) * E_SCC + m * c * sum_phi_M)
+        # infront = (2 * (1 - m) * E_SCC + m * c * sum_phi_M)
 
-        numerator = pos_root + infront
-        denominator = 4*(1-m)
+        # numerator = pos_root + infront
+        # denominator = 4*(1-m)
 
-        E_G = (2 * (1 - m) * E_SCC + m * c * sum_phi_M + pos_root) / (4*(1-m))
+        # E_G = ((2 * (1 - m)) * E_SCC + m * c * sum_phi_M + pos_root) / (4*(1-m))
 
         
-        print(f"infront",infront)
-        print(f"pos root",pos_root)
-        print(f"numerator:", numerator)
-        print(f"denominator:", denominator)
+        # print(f"infront",infront)
+        # print(f"pos root",pos_root)
+        # print(f"numerator:", numerator)
+        # print(f"denominator:", denominator)
         
 
-        print(f"GREEN MAX NEW", E_G)
+        # print(f"GREEN MAX NEW", E_G)
 
         return max(root, 0.0)
 
@@ -189,8 +218,7 @@ class OfficePolicyMotivPVM:
         """
         0 = 2(1-m) E_B^2 - [2(1-m)E_BAU - m c bar_phi_M] E_B + m c nu
         """
-        r = -5000
-        c = c*r
+        c = c*(0.001)
         A = 2.0 * (1.0 - m)
         B = - (2.0 * (1.0 - m) * E_BAU - m * c * sum_phi_M)
         C = + m * c * self.p.nu
@@ -199,4 +227,17 @@ class OfficePolicyMotivPVM:
         root = (-B + math.sqrt(disc)) / (2.0 * A)
         return max(root, 0.0)
 
+    def _E_SCC_level(self, xi_H:float, xi_L:float, t:int) -> float:
+        xi_combined = xi_H*self.p.qH + xi_L * self.p.qL
+        cal_param = 0.06                                                         # IPCC scaling
+        level_scale = 0.5                                                       # 2020 calibration
+        red_scale = (t*0.3)
+        E_SCC = ((self.p.nu / xi_combined)*(1/self.p.beta)-(1-self.p.delta))*cal_param * level_scale - red_scale
+        return E_SCC
+
+    @staticmethod
+    def _clip(x: float) -> float:
+        return 0.0 if x < 0.0 else (1.0 if x > 1.0 else x)
+
+    
 

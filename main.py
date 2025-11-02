@@ -34,7 +34,6 @@ def main():
     vote_G, vote_B = [], []
     E_G_series, E_B_series = [], []
 
-    e_prev = cfg.E_bau
 
     # logging containers
     elections: list[dict] = []
@@ -42,7 +41,7 @@ def main():
     vote_B: list[float] = []
     E_G_series: list[float] = []
     E_B_series: list[float] = []
-    testing: list[float] = []
+    E_SCC_level: list[float] = []
 
 
     #----- Set Start Beliefs ---------------------------------------
@@ -51,16 +50,12 @@ def main():
     def policy_fn(t:int) -> float:
         xi_H, xi_L = beliefs.current_xi()
 
-        E_SCC_init = 682
-        E_SCC = 682
-        test = E_SCC_reduction_function(t, 300, E_SCC_init, 0.25, midpoint=8)
-        testing.append(test)
-
-        E_star, V_G, V_B, E_G, E_B = voting.policy_and_election(
+        E_star, V_G, V_B, E_G, E_B, E_SCC = voting.policy_and_election(
+                t,
                 xi_H,
                 xi_L,
-                E_SCC=test,           # your placeholder
-                E_BAU=cfg.E_before,  # or e_prev
+                E_BAU=cfg.E_bau,  
+                #E_SCC=test,           
             )
 
         log_election(elections, t, E_star, xi_H, xi_L, vote_share=V_G)
@@ -68,6 +63,7 @@ def main():
         vote_B.append(V_B)
         E_G_series.append(E_G)
         E_B_series.append(E_B)
+        E_SCC_level.append(E_SCC)
             
         print(f"proposed E_G: ", E_G)
         print(f"proposed E_B: ", E_B)
@@ -89,28 +85,17 @@ def main():
     #----- Simulate ---------------------------------------------------
     ACE.simulate(policy_fn, learn_fn)
 
+    #--- THESIS GRAPHS ------------------------------------------------
 
 
-
-    #----- Plotting ---------------------------------------------------
     #----- Plotting ---------------------------------------------------
     years = np.arange(cfg.start_year, cfg.start_year + cfg.period_len * ACE.T, cfg.period_len)
-
-    # match years to number of elections actually logged
     years_elec = years[:len(elections)]
 
-
-
-    plot_time_series(testing, x=years_elec, title="E_SCC", xlabel="Year", ylabel="E_SCC")
-
-
-    plot_time_series_multi(
-        {"Green": E_G_series, "Brown": E_B_series},
-        x=years_elec,
-        title="Party platforms (E_G vs E_B)",
-        xlabel="Year",
-        ylabel="Emissions policy"
-    )
+    #plot_time_series(E_SCC_level, x=years_elec, title="E_SCC", xlabel="Year", ylabel="E_SCC")
+    print(cfg.BAU_E_CO2_init)
+    print(cfg.E_bau)
+    print(cfg.M_init)
 
     plot_time_series_multi(
         {"Green": vote_G, "Brown": vote_B},
@@ -119,6 +104,18 @@ def main():
         xlabel="Year",
         ylabel="Share (0–1)"
         )
+    plot_time_series_multi(
+        { "Brown": E_B_series, "Green": E_G_series,},
+        x=years_elec,
+        title="Party platform $E_G$ vs $E_B$",
+        xlabel="Year",
+        ylabel="Emissions policy",
+        y_min=0,
+        # colors={"Green": "#59db35", "Brown": "#fc9f47"},  # custom thesis colors
+        colors={"Green": "#127FBF", "Brown": "#F9703E"},  # custom thesis colors
+
+    )
+
 
 
     # elections chart (beliefs & E*)

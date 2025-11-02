@@ -57,18 +57,26 @@ def plot_time_series_multi(series: dict[str, list[float] | np.ndarray],
                            x: list[float] | np.ndarray | None = None,
                            title: str = "",
                            xlabel: str = "",
-                           ylabel: str = "") -> None:
-    import matplotlib.pyplot as plt
+                           ylabel: str = "",
+                           x_min: float | None = None,
+                           y_min: float | None = None,
+                           colors: dict[str, str] | None = None,
+                           ) -> None:
     plt.figure()
     for label, y in series.items():
         y = np.asarray(y)
         x_vals = np.arange(len(y)) if x is None else np.asarray(x)[:len(y)]
-        plt.plot(x_vals, y, label=label)
+        color = colors.get(label) if colors and label in colors else None
+        plt.plot(x_vals, y, label=label,color=color, linewidth= 1.8)
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    # plt.savefig("test.pdf", dpi=300, bbox_inches="tight")
+    if x_min is not None:
+        plt.xlim(left=x_min)
+    if y_min is not None:
+        plt.ylim(bottom=y_min)
+    plt.savefig("test.pdf", dpi=300, bbox_inches="tight")
     plt.show()
