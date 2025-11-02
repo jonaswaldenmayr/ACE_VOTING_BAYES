@@ -88,11 +88,17 @@ class OfficePolicyMotivPVM:
         print(f"E_SCC: ", E_SCC)
         print(f"E_bau: ", E_BAU)
 
+        political_pref_scaling = 28
+
         # φ_{M,j} for each group from ξ̂_j
-        phi_M_H = self._phi_M(xi_H,cl)*scale
-        phi_M_L =  self._phi_M(xi_L,cl)*scale
+        phi_M_H = self._phi_M(xi_H,1)*political_pref_scaling
+        phi_M_L =  self._phi_M(xi_L,1)*political_pref_scaling
         
         sum_phi_M = self.p.qH * phi_M_H + self.p.qL * phi_M_L
+        # print("#########")
+        # print(sum_phi_M)
+        # print("#########")
+
 
         a_eff = self.p.a_unified
         c = 1.0 / (2.0 * a_eff)
@@ -118,14 +124,14 @@ class OfficePolicyMotivPVM:
         # Δw_j = ν[log(E_G) - log(E_B)] + φ_{M,j}(E_G - E_B)
         
         ddd = self.p.nu * (math.log(E_G) - math.log(E_B))
-        ppp = (phi_M_L) * (E_G - E_B)
-        print(ddd)
-        print(ppp)
+        ppp = (phi_M_L*1) * (E_G - E_B)
+        print(f"ddd" ,ddd)
+        print(f"ppp",ppp)
 
 
 
-        welf_diff_H = self.p.nu * (math.log(E_G) - math.log(E_B)) + (phi_M_H) * (E_G - E_B)
-        welf_diff_L = self.p.nu * (math.log(E_G) - math.log(E_B)) + (phi_M_L) * (E_G - E_B)
+        welf_diff_H = self.p.nu * (math.log(E_G) - math.log(E_B)) + (phi_M_H*1) * (E_G - E_B)
+        welf_diff_L = self.p.nu * (math.log(E_G) - math.log(E_B)) + (phi_M_L*1) * (E_G - E_B)
         print(f"welf_diff_H", welf_diff_H)
         print(f"welf_diff_L", welf_diff_L)
         # F(z) = (z + a)/(2a) for μ=0, clipped to [0,1]
@@ -173,16 +179,17 @@ class OfficePolicyMotivPVM:
 
     def _phi_M(self, xi_hat_j: float, cl:float) -> float:
         # φ_{M,j} = - ξ̂_j / ((1 - β(1-δ)) (1 - βκ))
+        xi_hat_j = xi_hat_j *0.15
         beta, delta, kappa = self.p.beta, self.p.delta, self.p.kappa
         denom = (1.0 - beta * (1.0 - delta)) * (1.0 - beta * kappa)
+        print(f"phi",(- xi_hat_j  / denom) * cl)
         return (- xi_hat_j  / denom) * cl
 
     def _solve_green_max(self, m: float, c: float, sum_phi_M: float, E_SCC: float) -> float:
         """
         0 = 2(1-m) E_G^2 - [2(1-m)E_SCC - m c bar_phi_M] E_G - m c nu
         """
-
-        c = c*(5000)
+        #c = c * 5000
         A = 2.0 * (1.0 - m)
         B = - (2.0 * (1.0 - m) * E_SCC - m * c * sum_phi_M)
         C = - m * c * self.p.nu    
@@ -190,35 +197,13 @@ class OfficePolicyMotivPVM:
         disc = B * B - 4.0 * A * C
         root = (-B + math.sqrt(disc)) / (2.0 * A)
 
-        # print(f"GREEN MAX Original", root)
-
-        # obj = ((2*(1-m)*E_SCC + m * c * sum_phi_M)**2) + 8*(1-m)* m * c * self.p.nu
-
-        # pos_root = math.sqrt(obj)
-
-        # infront = (2 * (1 - m) * E_SCC + m * c * sum_phi_M)
-
-        # numerator = pos_root + infront
-        # denominator = 4*(1-m)
-
-        # E_G = ((2 * (1 - m)) * E_SCC + m * c * sum_phi_M + pos_root) / (4*(1-m))
-
-        
-        # print(f"infront",infront)
-        # print(f"pos root",pos_root)
-        # print(f"numerator:", numerator)
-        # print(f"denominator:", denominator)
-        
-
-        # print(f"GREEN MAX NEW", E_G)
-
         return max(root, 0.0)
 
     def _solve_brown_max(self, m: float, c: float, sum_phi_M: float, E_BAU: float) -> float:
         """
         0 = 2(1-m) E_B^2 - [2(1-m)E_BAU - m c bar_phi_M] E_B + m c nu
         """
-        c = c*(0.001)
+        #c = c * 5000
         A = 2.0 * (1.0 - m)
         B = - (2.0 * (1.0 - m) * E_BAU - m * c * sum_phi_M)
         C = + m * c * self.p.nu
@@ -229,10 +214,9 @@ class OfficePolicyMotivPVM:
 
     def _E_SCC_level(self, xi_H:float, xi_L:float, t:int) -> float:
         xi_combined = xi_H*self.p.qH + xi_L * self.p.qL
-        cal_param = 0.06                                                         # IPCC scaling
-        level_scale = 0.5                                                       # 2020 calibration
-        red_scale = (t*0.3)
-        E_SCC = ((self.p.nu / xi_combined)*(1/self.p.beta)-(1-self.p.delta))*cal_param * level_scale - red_scale
+        level_scale = 0.02                                                       # 2020 calibration
+        red_scale = (t*0.005)
+        E_SCC = ((self.p.nu / xi_combined)*(1/self.p.beta)-(1-self.p.delta)) * level_scale - red_scale
         return E_SCC
 
     @staticmethod
