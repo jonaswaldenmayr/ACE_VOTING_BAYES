@@ -112,7 +112,8 @@ class OfficePolicyMotivPVM:
             V_G = 0.5
             V_B = 0.5
             E_star = E_star
-            return (E_star, V_G, V_B, E_G, E_B)
+            E_SCC = 0
+            return (E_star, V_G, V_B, E_G, E_B, E_SCC)
 
         
         # Office & Policy Motivation (platforms diverge)

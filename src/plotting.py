@@ -61,6 +61,10 @@ def plot_time_series_multi(series: dict[str, list[float] | np.ndarray],
                            x_min: float | None = None,
                            y_min: float | None = None,
                            colors: dict[str, str] | None = None,
+                           y_line: float | None = None,
+                           y_line_color: str = "gray",
+                           y_line_style: str = "--",
+                           y_line_width: float = 1.2,
                            ) -> None:
     plt.figure()
     for label, y in series.items():
@@ -68,6 +72,15 @@ def plot_time_series_multi(series: dict[str, list[float] | np.ndarray],
         x_vals = np.arange(len(y)) if x is None else np.asarray(x)[:len(y)]
         color = colors.get(label) if colors and label in colors else None
         plt.plot(x_vals, y, label=label,color=color, linewidth= 1.8)
+
+    if y_line is not None:
+        plt.axhline(
+            y=y_line,
+            color=y_line_color,
+            linestyle=y_line_style,
+            linewidth=y_line_width,
+        )
+
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -79,4 +92,225 @@ def plot_time_series_multi(series: dict[str, list[float] | np.ndarray],
     if y_min is not None:
         plt.ylim(bottom=y_min)
     plt.savefig("test.pdf", dpi=300, bbox_inches="tight")
+    plt.show()
+
+
+
+def plot_time_series_multi(series: dict[str, list[float] | np.ndarray],
+                           x: list[float] | np.ndarray | None = None,
+                           title: str = "",
+                           xlabel: str = "",
+                           ylabel: str = "",
+                           x_min: float | None = None,
+                           y_min: float | None = None,
+                           colors: dict[str, str] | None = None,
+                           y_line: float | None = None,
+                           y_line_color: str = "gray",
+                           y_line_style: str = "--",
+                           y_line_width: float = 1.2,
+                           y_horizontal_label: str | None = None,
+                            legend_loc: str = "best",
+                           ) -> None:
+    plt.figure()
+    for label, y in series.items():
+        y = np.asarray(y)
+        x_vals = np.arange(len(y)) if x is None else np.asarray(x)[:len(y)]
+        color = colors.get(label) if colors and label in colors else None
+        plt.plot(x_vals, y, label=label,color=color, linewidth= 1.8)
+
+    if y_line is not None:
+        plt.axhline(
+            y=y_line,
+            color=y_line_color,
+            linestyle=y_line_style,
+            linewidth=y_line_width,
+            label=y_horizontal_label if y_horizontal_label else None,
+        )
+
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+
+    plt.legend(loc=legend_loc, frameon=True, framealpha=0.9, edgecolor="gray")
+
+
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    if x_min is not None:
+        plt.xlim(left=x_min)
+    if y_min is not None:
+        plt.ylim(bottom=y_min)
+    plt.savefig("test.pdf", dpi=300, bbox_inches="tight")
+    plt.show()
+
+def plot_dual_axis(
+    x: list[float] | np.ndarray,
+    y_left: list[float] | np.ndarray,
+    y_right: list[float] | np.ndarray,
+    label_left: str,
+    label_right: str,
+    title: str = "",
+    color_left: str = "#127FBF",
+    color_right: str = "#F9703E",
+    xlabel: str = "Year",
+    figsize: tuple[int, int] = (9, 5),
+) -> None:
+    """Plot two time series with separate y-axes (left & right)."""
+    fig, ax1 = plt.subplots(figsize=figsize)
+
+    # Left axis
+    ax1.plot(x, y_left, color=color_left, label=label_left, linewidth=1.8)
+    ax1.set_xlabel(xlabel)
+    ax1.set_ylabel(label_left, color=color_left)
+    ax1.tick_params(axis="y", labelcolor=color_left)
+
+    # Right axis (twin)
+    ax2 = ax1.twinx()
+    ax2.plot(x, y_right, color=color_right, label=label_right, linewidth=1.8, linestyle="--")
+    ax2.set_ylabel(label_right, color=color_right)
+    ax2.tick_params(axis="y", labelcolor=color_right)
+
+    # Title and grid
+    fig.suptitle(title)
+    ax1.grid(True, alpha=0.3)
+    fig.tight_layout()
+    plt.show()
+
+
+def plot_dual_axis_beliefs_M(
+    years: np.ndarray,
+    M_t: np.ndarray,
+    elections: list[dict],
+    title: str = "Atmospheric Carbon and Average Beliefs",
+    color_M: str = "#127FBF",     # blue
+    color_xi: str = "#F9703E",    # orange
+    xlabel: str = "Year",
+    figsize: tuple[int, int] = (9, 5),
+) -> None:
+    """Plot M_t (left axis) and average beliefs (right axis)."""
+    xi_H = np.array([e["xi_H"] for e in elections])
+    xi_L = np.array([e["xi_L"] for e in elections])
+    xi_avg = 0.5 * (xi_H + xi_L)
+
+    # Align time steps with elections
+    x = years[:len(elections)]
+
+    fig, ax1 = plt.subplots(figsize=figsize)
+
+    # Left y-axis: M_t
+    ax1.plot(x, M_t[1:len(x)+1], color=color_M, linewidth=1.8, label="Atmospheric Carbon (GtC)")
+    ax1.set_xlabel(xlabel)
+    ax1.set_ylabel("Atmospheric Carbon (GtC)", color=color_M)
+    ax1.tick_params(axis="y", labelcolor=color_M)
+
+    # Right y-axis: average beliefs
+    ax2 = ax1.twinx()
+    ax2.plot(x, xi_avg, color=color_xi, linewidth=1.8, linestyle="--", label=r"Average $\hat{\xi}$")
+    ax2.set_ylabel(r"Average $\hat{\xi}$", color=color_xi)
+    ax2.tick_params(axis="y", labelcolor=color_xi)
+
+    # Title, grid, and layout
+    fig.suptitle(title)
+    ax1.grid(True, alpha=0.3)
+    fig.tight_layout()
+    plt.show()
+
+def plot_beliefs_and_damages(
+    years: np.ndarray,
+    elections: list[dict],
+    damages: np.ndarray,
+    title: str = "Beliefs and Damages",
+    color_H: str = "#127FBF",   # blue
+    color_L: str = "#F9703E",   # orange
+    color_D: str = "#E63946",   # red (damages)
+    xlabel: str = "Year",
+    figsize: tuple[int, int] = (9, 5),
+    save_pdf: bool = False,
+) -> None:
+    """Plot ξ_H, ξ_L (left y-axis) and damages D_t (right y-axis)."""
+    xi_H = np.array([e["xi_H"] for e in elections])
+    xi_L = np.array([e["xi_L"] for e in elections])
+    x = years[:len(elections)]
+
+    fig, ax1 = plt.subplots(figsize=figsize)
+
+    # --- Left y-axis: beliefs ---
+    ax1.plot(x, xi_H, color=color_H, linewidth=1.8, linestyle="--",label=r"$\hat{\xi}_H$")
+    ax1.plot(x, xi_L, color=color_L, linewidth=1.8, linestyle="--",label=r"$\hat{\xi}_L$")
+    ax1.set_xlabel(xlabel)
+    ax1.set_ylabel(r"Beliefs $\hat{\xi}_j$", color=color_H)
+    ax1.tick_params(axis="y", labelcolor=color_H)
+
+    # --- Right y-axis: damages ---
+    ax2 = ax1.twinx()
+    ax2.plot(years[:len(damages)], damages[:len(x)], color=color_D, linewidth=1.8, label="Damages")
+    ax2.set_ylabel("Damages (fraction of GDP)", color=color_D)
+    ax2.tick_params(axis="y", labelcolor=color_D)
+
+    # --- Titles, grid, and legend ---
+    fig.suptitle(title)
+    ax1.grid(True, alpha=0.3)
+
+    # Combine legends from both axes
+    lines, labels = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines + lines2, labels + labels2, loc="upper right", frameon=True, framealpha=0.9)
+
+    fig.tight_layout()
+    if save_pdf:
+        fig.savefig("beliefs_and_damages.pdf", dpi=300, bbox_inches="tight")
+
+
+    plt.show()
+
+
+def plot_all_beliefs_and_damages(
+    years: np.ndarray,
+    elections: list[dict],
+    damages: np.ndarray,
+    title: str = "Beliefs (High, Low, Avg) and Damages over Time",
+    color_H: str = "#127FBF",    # blue
+    color_L: str = "#F9703E",    # or
+    color_avg: str = "#6c757d",  # neutral gray
+    color_D: str = "#E63946",    # red
+    xlabel: str = "Year",
+    figsize: tuple[int, int] = (9, 5),
+    save_pdf: bool = False,
+) -> None:
+    """Plot ξ_H, ξ_L, average ξ (left y-axis) and damages D_t (right y-axis)."""
+    xi_H = np.array([e["xi_H"] for e in elections])
+    xi_L = np.array([e["xi_L"] for e in elections])
+    xi_avg = 0.5 * (xi_H + xi_L)
+    x = years[:len(elections)]
+
+    fig, ax1 = plt.subplots(figsize=figsize)
+
+    # --- Left y-axis: beliefs ---
+    ax1.plot(x, xi_H, color=color_H, linewidth=1.8, linestyle=":",label=r"$\hat{\xi}_H$")
+    ax1.plot(x, xi_L, color=color_L, linewidth=1.8, linestyle=":", label=r"$\hat{\xi}_L$")
+    ax1.plot(x, xi_avg, color=color_avg, linewidth=1.6, linestyle="--", label=r"$\bar{\xi}$ (avg)")
+    ax1.set_xlabel(xlabel)
+    ax1.set_ylabel(r"Beliefs $\hat{\xi}_j$", color=color_H)
+    ax1.tick_params(axis="y", labelcolor=color_H)
+
+    # --- Right y-axis: damages ---
+    ax2 = ax1.twinx()
+    ax2.plot(years[:len(damages)], damages[:len(x)], color=color_D, linewidth=1.8, label="Damages")
+    ax2.set_ylabel("Damages (fraction of GDP)", color=color_D)
+    ax2.tick_params(axis="y", labelcolor=color_D)
+
+    # --- Title, grid, legend ---
+    fig.suptitle(title)
+    ax1.grid(True, alpha=0.3)
+
+    # Combine legends from both axes
+    lines, labels = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines + lines2, labels + labels2, loc="upper right", frameon=True, framealpha=0.9)
+
+    fig.tight_layout()
+    if save_pdf:
+        fig.savefig("beliefs_all_and_damages.pdf", dpi=300, bbox_inches="tight")
+
     plt.show()

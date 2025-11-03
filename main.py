@@ -5,7 +5,7 @@ from src.helpers import E_SCC_reduction_function
 from src.voting.OfficeMotiv_model import OfficeMotivPVM, VotingOutcome
 from src.voting.PolicyOfficeMotiv_model import OfficePolicyMotivPVM, build_pvm_params
 from src.ACE.ACE_reduced import ACEModel_RF
-from src.plotting import plot_time_series, log_election, plot_election_series, plot_time_series_multi
+from src.plotting import plot_all_beliefs_and_damages, plot_beliefs_and_damages, plot_dual_axis, plot_dual_axis_beliefs_M, plot_time_series, log_election, plot_election_series, plot_time_series_multi
 from src.updating.belief_updating import GroupBeliefUpdating
 from src.config.config import Parameters, all_config
 
@@ -85,54 +85,118 @@ def main():
     #----- Simulate ---------------------------------------------------
     ACE.simulate(policy_fn, learn_fn)
 
-    #--- THESIS GRAPHS ------------------------------------------------
-
+    
 
     #----- Plotting ---------------------------------------------------
     years = np.arange(cfg.start_year, cfg.start_year + cfg.period_len * ACE.T, cfg.period_len)
     years_elec = years[:len(elections)]
 
-    #plot_time_series(E_SCC_level, x=years_elec, title="E_SCC", xlabel="Year", ylabel="E_SCC")
-    print(cfg.BAU_E_CO2_init)
-    print(cfg.E_bau)
-    print(cfg.M_init)
-
-    plot_time_series_multi(
-        {"Green": vote_G, "Brown": vote_B},
-        x=years_elec,
-        title="Vote shares (Green vs Brown)",
-        xlabel="Year",
-        ylabel="Share (0–1)"
-        )
-    plot_time_series_multi(
-        { "Brown": E_B_series, "Green": E_G_series,},
-        x=years_elec,
-        title="Party platform $E_G$ vs $E_B$",
-        xlabel="Year",
-        ylabel="Emissions policy",
-        y_min=0,
-        # colors={"Green": "#59db35", "Brown": "#fc9f47"},  # custom thesis colors
-        colors={"Green": "#127FBF", "Brown": "#F9703E"},  # custom thesis colors
-
-    )
-
+    # plot_time_series_multi(
+    #     {"Green": vote_G, "Brown": vote_B},
+    #     x=years_elec,
+    #     title="Party Vote shares (Green vs Brown)",
+    #     xlabel="Year",
+    #     ylabel="Share",
+    #     y_line = 0.5,
+    #     y_line_width=0.8,
+    #     y_line_color="black",
+    #     y_line_style="--",
+    #     )
+    
+    # plot_time_series_multi(
+    #     { "$E_B^*$": E_B_series, "$E_G^*$": E_G_series,},
+    #     x=years_elec,
+    #     title="Party platform $E_G^*$ vs $E_B^*$",
+    #     xlabel="Year",
+    #     ylabel="Emissions policy",
+    #     y_min=0,
+    #     # colors={"Green": "#59db35", "Brown": "#fc9f47"},  # custom thesis colors
+    #     colors={"$E_G^*$": "#127FBF", "$E_B^*$": "#F9703E"},  # custom thesis colors
+    # )
 
 
-    # elections chart (beliefs & E*)
+    # Extract beliefs and E* from the elections log
+    xi_H_series   = [e["xi_H"]   for e in elections]
+    xi_L_series   = [e["xi_L"]   for e in elections]
+    E_star_series = [e["E_star"] for e in elections]
+
+    # plot_time_series_multi(
+    #     {
+    #         r"$\hat{\xi}_H$": xi_H_series,
+    #         r"$\hat{\xi}_L$": xi_L_series,
+    #     },
+    #     x=years_elec,
+    #     title="Beliefs about climate sensitivity",
+    #     xlabel="Year",
+    #     ylabel=r"$\hat{\xi}$",
+    #     # optional: your thesis colors
+    #     colors={r"$\hat{\xi}_H$": "#127FBF", r"$\hat{\xi}_L$": "#F9703E"},
+    #     legend_loc="best",
+    #     y_line = 0.0002046,
+    #     y_line_width=0.8,
+    #     y_line_color="black",
+    #     y_line_style="--",
+    # )
+
+    # plot_time_series_multi(
+    #     {
+    #         r"$E^*$": E_star_series,
+    #     },
+    #     x=years_elec,
+    #     title=r"Elected Policy $E^*$",
+    #     xlabel="Year",
+    #     ylabel=r"$E^*$",
+    #     legend_loc="best",
+    # )
+
+    # plot_time_series(ACE.E, x=years, title="Yearly Emissions policy", xlabel="Year", ylabel="$E^*$")
+
+
+    # plot_dual_axis(
+    #     x=years,
+    #     y_left=ACE.M[1:],          # atmospheric carbon
+    #     y_right=ACE.D,             # damages
+    #     label_left="Atmospheric Carbon (GtC)",
+    #     label_right="Damages (fraction of GDP)",
+    #     title="Atmospheric Carbon vs Damages",
+    #     color_left="#127FBF",
+    #     color_right="#F9703E",
+    # )
+
+    # plot_all_beliefs_and_damages(
+    #     years=years,
+    #     elections=elections,
+    #     damages=ACE.D,
+    #     title="Beliefs (High, Low, Avg) and Damages over Time",
+    #     save_pdf=True,
+    # )
+
+
+    # plot_beliefs_and_damages(
+    #     years=years,
+    #     elections=elections,
+    #     damages=ACE.D,
+    #     title="Beliefs and Climate Damages over Time",
+    #     save_pdf=True,
+    # )
+
+
+
+
+
     plot_election_series(elections, years_elec)
 
-    # vote shares & platforms (use the arrays we collected)
-    plot_time_series(vote_G, x=years_elec, title="Vote share – Green", xlabel="Year", ylabel="Share (0–1)")
-    plot_time_series(vote_B, x=years_elec, title="Vote share – Brown", xlabel="Year", ylabel="Share (0–1)")
-    plot_time_series(E_G_series, x=years_elec, title="Party platform E_G", xlabel="Year", ylabel="Emissions policy")
-    plot_time_series(E_B_series, x=years_elec, title="Party platform E_B", xlabel="Year", ylabel="Emissions policy")
+    # # vote shares & platforms (use the arrays we collected)
+    # plot_time_series(vote_G, x=years_elec, title="Vote share – Green", xlabel="Year", ylabel="Share (0–1)")
+    # plot_time_series(vote_B, x=years_elec, title="Vote share – Brown", xlabel="Year", ylabel="Share (0–1)")
+    # plot_time_series(E_G_series, x=years_elec, title="Party platform E_G", xlabel="Year", ylabel="Emissions policy")
+    # plot_time_series(E_B_series, x=years_elec, title="Party platform E_B", xlabel="Year", ylabel="Emissions policy")
 
     # existing macro series
     plot_time_series(ACE.Y, x=years, title="GDP Y", xlabel="Year", ylabel="GDP")
     plot_time_series(ACE.K, x=years, title="Capital K", xlabel="Year", ylabel="Capital")
     plot_time_series(ACE.D, x=years, title="Damages D", xlabel="Year", ylabel="Damage")
     plot_time_series(ACE.M[1:], x=years, title="Atmospheric Carbon M", xlabel="Year", ylabel="Carbon (GtC)")
-    plot_time_series(ACE.E, x=years, title="Emissions policy (per year)", xlabel="Year", ylabel="E (per year)")
 
 
 
