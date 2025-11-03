@@ -396,8 +396,8 @@ def plot_scenarios_flexible(
     ax.legend(loc=legend_loc, frameon=True, framealpha=0.9, edgecolor="gray")
     fig.tight_layout()
 
-    if save_path:
-        fig.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.savefig(f"pdf/{re.sub(r'[^A-Za-z0-9_-]+', '_', title.strip() or 'plot')}.pdf", dpi=300, bbox_inches='tight')
+
 
     if log_y:
         ax.set_yscale("log")
