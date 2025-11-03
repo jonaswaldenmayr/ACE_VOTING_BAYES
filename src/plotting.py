@@ -3,7 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Iterable
 from typing import List, Dict, Any
+import re
 import numpy as np
+from matplotlib.ticker import ScalarFormatter
+
 import matplotlib.pyplot as plt
 
 def log_election(store: List[Dict[str, Any]], t: int, E_star: float,
@@ -49,6 +52,8 @@ def plot_time_series(Y, x=None, title=None, xlabel='Year', ylabel='Value',
         ax.set_title(title)
     ax.grid(True)
     ax.legend()
+    plt.savefig(f"pdf/{re.sub(r'[^A-Za-z0-9_-]+', '_', title.strip() or 'plot')}.pdf", dpi=300, bbox_inches='tight')
+
     if show:
         plt.show()
     return fig, ax
@@ -141,7 +146,7 @@ def plot_time_series_multi(series: dict[str, list[float] | np.ndarray],
         plt.xlim(left=x_min)
     if y_min is not None:
         plt.ylim(bottom=y_min)
-    plt.savefig("test.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(f"pdf/{re.sub(r'[^A-Za-z0-9_-]+', '_', title.strip() or 'plot')}.pdf", dpi=300, bbox_inches='tight')
     plt.show()
 
 def plot_dual_axis(
@@ -175,7 +180,9 @@ def plot_dual_axis(
     fig.suptitle(title)
     ax1.grid(True, alpha=0.3)
     fig.tight_layout()
+    plt.savefig(f"pdf/{re.sub(r'[^A-Za-z0-9_-]+', '_', title.strip() or 'plot')}.pdf", dpi=300, bbox_inches='tight')
     plt.show()
+
 
 
 def plot_dual_axis_beliefs_M(
@@ -258,8 +265,7 @@ def plot_beliefs_and_damages(
     ax1.legend(lines + lines2, labels + labels2, loc="upper right", frameon=True, framealpha=0.9)
 
     fig.tight_layout()
-    if save_pdf:
-        fig.savefig("beliefs_and_damages.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(f"pdf/{re.sub(r'[^A-Za-z0-9_-]+', '_', title.strip() or 'plot')}.pdf", dpi=300, bbox_inches='tight')
 
 
     plt.show()
@@ -289,9 +295,9 @@ def plot_all_beliefs_and_damages(
     # --- Left y-axis: beliefs ---
     ax1.plot(x, xi_H, color=color_H, linewidth=1.8, linestyle=":",label=r"$\hat{\xi}_H$")
     ax1.plot(x, xi_L, color=color_L, linewidth=1.8, linestyle=":", label=r"$\hat{\xi}_L$")
-    ax1.plot(x, xi_avg, color=color_avg, linewidth=1.6, linestyle="--", label=r"$\bar{\xi}$ (avg)")
+    ax1.plot(x, xi_avg, color=color_avg, linewidth=1.6, linestyle="--", label=r"$\hat{\xi}$ (avg)")
     ax1.set_xlabel(xlabel)
-    ax1.set_ylabel(r"Beliefs $\hat{\xi}_j$", color=color_H)
+    ax1.set_ylabel(r"Beliefs $\hat{\xi}$", color=color_H)
     ax1.tick_params(axis="y", labelcolor=color_H)
 
     # --- Right y-axis: damages ---
@@ -312,5 +318,90 @@ def plot_all_beliefs_and_damages(
     fig.tight_layout()
     if save_pdf:
         fig.savefig("beliefs_all_and_damages.pdf", dpi=300, bbox_inches="tight")
+
+    plt.savefig(f"pdf/{re.sub(r'[^A-Za-z0-9_-]+', '_', title.strip() or 'plot')}.pdf", dpi=300, bbox_inches='tight')
+    plt.show()
+
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+def plot_scenarios_flexible(
+    series: dict[str, np.ndarray | list[float]],
+    start_year: int = 2020,
+    step: int = 10,
+    title: str = "",
+    xlabel: str = "Year",
+    ylabel: str = "",
+    colors: dict[str, str] | None = None,
+    y_line: float | None = None,
+    y_line_label: str | None = None,
+    y_line_style: str = "--",
+    y_line_width: float = 1.2,
+    y_line_color: str = "gray",
+    y_min: float | None = None,
+    x_min: float | None = None,
+    legend_loc: str = "best",
+    figsize: tuple[int, int] = (9, 5),
+    save_path: str | None = "test.pdf",
+    log_y: bool = False,
+):
+    """Plot multiple scenario series of potentially unequal lengths."""
+    if not series:
+        raise ValueError("`series` is empty. Provide at least one series.")
+
+    fig, ax = plt.subplots(figsize=figsize)
+
+    plotted_any = False
+    for label, y in series.items():
+        if y is None:
+            continue
+        y_arr = np.asarray(y, dtype=float).ravel()
+        if y_arr.size == 0 or np.all(~np.isfinite(y_arr)):
+            continue
+
+        # Build an x for this series individually
+        x_vals = np.arange(start_year, start_year + step * y_arr.size, step)
+
+        color = colors.get(label) if (colors and label in colors) else None
+        ax.plot(x_vals, y_arr, label=label, linewidth=1.8, color=color)
+        plotted_any = True
+
+    if not plotted_any:
+        raise ValueError("No plottable data found in `series` (all empty or invalid).")
+
+    # Optional horizontal reference line
+    if y_line is not None:
+        ax.axhline(
+            y=y_line,
+            linestyle=y_line_style,
+            linewidth=y_line_width,
+            color=y_line_color,
+            label=y_line_label if y_line_label else None,
+        )
+
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    if x_min is not None:
+        ax.set_xlim(left=x_min)
+    if y_min is not None:
+        ax.set_ylim(bottom=y_min)
+
+    ax.grid(True, alpha=0.3)
+
+    ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=False))
+    ax.ticklabel_format(style='plain', axis='y')
+    ax.legend(loc=legend_loc, frameon=True, framealpha=0.9, edgecolor="gray")
+    fig.tight_layout()
+
+    if save_path:
+        fig.savefig(save_path, dpi=300, bbox_inches="tight")
+
+    if log_y:
+        ax.set_yscale("log")
+    else:
+        ax.set_yscale("linear")  # explicitly ensure linear scaling
 
     plt.show()
